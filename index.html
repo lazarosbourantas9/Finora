@@ -1,0 +1,3592 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finora - Έλεγξε τα οικονομικά σου με καθαρότητα.</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+  <style>
+    :root {
+  --bg: #0d1527;
+  --bg-soft: #111927;
+  --bg-softer: #030712;
+
+  --accent: #38bdf8;                 /* Primary cyan */
+  --accent-soft: rgba(56, 189, 248, 0.18);
+  --accent-strong: #0ea5e9;          /* Stronger cyan */
+
+  --danger: #f87171;
+  --success: #4ade80;
+  --warning: #fbbf24;
+
+  --text: #e6e9ef;
+  --text-muted: #9ca7b8;
+
+  --border: #1e2838;
+
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+
+  --shadow-soft: 0 18px 45px rgba(14, 20, 34, 0.7);
+  --shadow-chip: 0 8px 20px rgba(14, 20, 34, 0.7);
+
+  --transition-fast: 0.18s ease-out;
+  --transition-medium: 0.3s ease-out;
+}
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #1d2437 0, #020617 45%, #000 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 16px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 16px 12px; }
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1400px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      border-radius: 26px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.13);
+      padding: 24px 22px 20px;
+      backdrop-filter: blur(22px);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @media (max-width: 600px) {
+      .app {
+        border-radius: 20px;
+        padding: 18px 16px;
+      }
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      animation: slideIn 0.5s ease-out;
+      flex-wrap: wrap;
+    }
+
+    .title-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-pill {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: radial-gradient(circle at 10% 0, #22d3ee, #0369a1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-chip);
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--transition-fast);
+    }
+
+    .logo-pill:hover {
+      transform: rotate(5deg) scale(1.05);
+    }
+
+    .logo-pill span {
+      font-weight: 700;
+      font-size: 19px;
+      color: #e5faff;
+    }
+
+    .logo-pill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.28), transparent 50%);
+      opacity: 0.8;
+    }
+
+    .title-text h1 {
+      font-size: 1.35rem;
+      margin: 0 0 4px;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+      .title-text h1 { font-size: 1.1rem; }
+    }
+
+    .title-text h1 span.chip {
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      padding: 2px 10px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #000;
+      font-weight: 700;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .title-text p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(15, 23, 42, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      backdrop-filter: blur(14px);
+      transition: all var(--transition-fast);
+    }
+
+    .pill:hover {
+      border-color: rgba(148, 163, 184, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #4ade80;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.21);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(15, 23, 42, 1);
+      border-color: rgba(148, 163, 184, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.8);
+      color: var(--text);
+    }
+
+    #csvFileInput {
+      display: none;
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      overflow-x: auto;
+    }
+
+    .tab-nav button {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+
+    @media (max-width: 600px) {
+      .tab-nav button {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        min-width: 80px;
+      }
+    }
+
+    .tab-nav button:hover {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .tab-nav button.active {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-weight: 600;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    @media (min-width: 1200px) {
+      .layout.two-column {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+    }
+
+    /* Summary cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+    }
+
+    .card {
+      background: linear-gradient(155deg, #020617, #020617);
+      border-radius: var(--radius-xl);
+      padding: 14px 16px;
+      border: 1px solid rgba(30, 64, 175, 0.35);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.9);
+      position: relative;
+      overflow: hidden;
+      transition: all var(--transition-medium);
+      animation: scaleIn 0.4s ease-out backwards;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(15, 23, 42, 0.95);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.065), transparent 60%),
+        radial-gradient(circle at 100% 0, rgba(30, 64, 175, 0.085), transparent 60%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+    }
+
+    .badge-soft {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text-muted);
+    }
+
+    .card-main {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-main .value {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      transition: transform var(--transition-fast);
+    }
+
+    .card:hover .card-main .value {
+      transform: scale(1.05);
+    }
+
+    .card-main .value span.currency {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .card-main .hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .amount-pos {
+      color: #4ade80 !important;
+    }
+
+    .amount-neg {
+      color: #f97373 !important;
+    }
+
+    .amount-warning {
+      color: #fbbf24 !important;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      border-radius: 999px;
+      transition: width 0.5s ease-out;
+      position: relative;
+    }
+
+    .progress-fill.warning {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    }
+
+    .progress-fill.danger {
+      background: linear-gradient(90deg, #f97373, #dc2626);
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    /* Section */
+    .section {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      animation: slideIn 0.5s ease-out backwards;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title span.emoji {
+      font-size: 1.3rem;
+    }
+
+    /* Form elements */
+    .type-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .type-toggle label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all var(--transition-fast);
+      user-select: none;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+    }
+
+    .type-toggle input[type="radio"],
+    .type-toggle input[type="checkbox"] {
+      display: none;
+    }
+
+    .type-toggle input[type="radio"]:checked + label {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-weight: 600;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+      transform: scale(1.02);
+    }
+
+    .type-toggle input[type="checkbox"]:checked + label {
+      background: rgba(74, 222, 128, 0.2);
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      animation: fadeIn 0.4s ease-out backwards;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+      font-family: inherit;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    /* Insights */
+    .insight-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.05));
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .insight-card.warning {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .insight-card.success {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.05));
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    .insight-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .insight-content h4 {
+      margin: 0 0 4px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .insight-content p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Chart container */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .chart-container {
+        height: 250px;
+      }
+    }
+
+    /* Budget item */
+    .budget-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .budget-category {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .budget-amounts {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .budget-amounts .spent {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Achievements */
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .achievement {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .achievement:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .achievement.unlocked {
+      border-color: var(--success);
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.05));
+    }
+
+    .achievement.locked {
+      opacity: 0.4;
+      filter: grayscale(1);
+    }
+
+    .achievement-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    .achievement-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .achievement-desc {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Savings Goals */
+    .goal-card {
+      background: linear-gradient(155deg, #020617, #0a0f1e);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all var(--transition-medium);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .goal-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+    }
+
+    .goal-card.completed::before {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      animation: shimmer 2s infinite;
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .goal-info {
+      flex: 1;
+    }
+
+    .goal-icon-display {
+      font-size: 2.5rem;
+      margin-right: 12px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .goal-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .goal-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .goal-badge {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .goal-badge.in-progress {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .goal-badge.completed {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .goal-deadline {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .goal-deadline.urgent {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .goal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon-small {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      font-size: 1rem;
+    }
+
+    .btn-icon-small:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: scale(1.1);
+    }
+
+    .btn-icon-small.delete:hover {
+      background: rgba(249, 115, 115, 0.2);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .goal-progress-section {
+      margin-bottom: 16px;
+    }
+
+    .goal-amounts {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+
+    .goal-current {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--success);
+    }
+
+    .goal-target {
+      color: var(--text-muted);
+    }
+
+    .goal-percentage {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .goal-progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .goal-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      border-radius: 999px;
+      transition: width 0.5s ease-out;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(74, 222, 128, 0.4);
+    }
+
+    .goal-progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    .goal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .goal-stat {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .goal-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .goal-stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .goal-actions-bottom {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-contribute {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .btn-contribute:hover {
+      background: rgba(74, 222, 128, 0.25);
+      border-color: var(--success);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(74, 222, 128, 0.3);
+    }
+
+    .empty-goals {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-goals-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-goals h3 {
+      font-size: 1.2rem;
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+
+    .empty-goals p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.4);
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideInUp 0.3s ease-out;
+      display: none;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    /* Tables */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar select {
+      flex: 1;
+      min-width: 150px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      outline: none;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      background: rgba(15, 23, 42, 0.5);
+      margin-bottom: 16px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+      transition: all var(--transition-fast);
+      animation: fadeIn 0.3s ease-out backwards;
+    }
+
+    tbody tr:hover {
+      background: rgba(56, 189, 248, 0.05);
+      transform: scale(1.01);
+    }
+
+    tbody td {
+      padding: 12px;
+      font-size: 0.85rem;
+    }
+
+    .date-cell {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .amount-cell {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chip-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .chip-income {
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+
+    .chip-expense {
+      background: rgba(249, 115, 115, 0.15);
+      color: #f97373;
+      border: 1px solid rgba(249, 115, 115, 0.3);
+    }
+
+    .chip-recurring {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      margin-left: 4px;
+    }
+
+    .chip-type .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .btn-icon {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(249, 115, 115, 0.3);
+      background: rgba(249, 115, 115, 0.1);
+      color: var(--danger);
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-icon:hover {
+      background: rgba(249, 115, 115, 0.2);
+      border-color: var(--danger);
+      transform: translateY(-1px);
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: none;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-actions button {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .btn-danger {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(249, 115, 115, 0.4);
+      background: rgba(249, 115, 115, 0.15);
+      color: var(--danger);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .btn-danger:hover {
+      background: rgba(249, 115, 115, 0.25);
+      border-color: var(--danger);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(249, 115, 115, 0.3);
+    }
+
+    .btn-success {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .btn-success:hover {
+      background: rgba(74, 222, 128, 0.25);
+      border-color: var(--success);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(74, 222, 128, 0.3);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      padding: 14px;
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 10px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      padding: 20px;
+      overflow-y: auto;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.95));
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      animation: scaleIn 0.3s ease-out;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: rgba(249, 115, 115, 0.15);
+      border: 1px solid rgba(249, 115, 115, 0.3);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--danger);
+      font-size: 1.2rem;
+      transition: all var(--transition-fast);
+    }
+
+    .modal-close:hover {
+      background: rgba(249, 115, 115, 0.25);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="title-block">
+        <div class="logo-pill">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+            <defs>
+              <linearGradient id="finoraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0ea5e9"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+
+              <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#020617" flood-opacity="0.7"/>
+              </filter>
+            </defs>
+
+            <!-- Icon only -->
+            <g transform="translate(8,8)" filter="url(#softShadow)">
+              <circle cx="24" cy="24" r="22"
+                fill="#020617"
+                stroke="url(#finoraGradient)"
+                stroke-width="2.2"/>
+
+              <circle cx="24" cy="24" r="18"
+                fill="none"
+                stroke="url(#finoraGradient)"
+                stroke-width="1.4"
+                stroke-opacity="0.35"/>
+
+              <path
+                d="M20 16
+                  a4 4 0 0 1 4-4
+                  h8
+                  a2 2 0 0 1 0 4
+                  h-8
+                  v6
+                  h6
+                  a2 2 0 0 1 0 4
+                  h-6
+                  v10
+                  a2 2 0 0 1-4 0
+                  z"
+                fill="url(#finoraGradient)"/>
+
+              <path
+                d="M17 30
+                  C20 32, 23 33, 26 32
+                  S32 30, 35 32"
+                fill="none"
+                stroke="url(#finoraGradient)"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-opacity="0.9"/>
+            </g>
+          </svg>
+
+
+        </div>
+        <div class="title-text">
+          <h1>
+            Finora - Έλεγξε τα οικονομικά σου με καθαρότητα.
+            <span class="chip">PRO</span>
+          </h1>
+          <p>Έξυπνη διαχείριση & ανάλυση.</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span data-i18n="live">Live</span>
+        </div>
+        <button class="btn-ghost" id="langBtn" title="Change Language / Αλλαγή Γλώσσας">
+          <span class="icon">🌐</span>
+          <span id="currentLang">EL</span>
+        </button>
+        <button class="btn-ghost" id="helpBtn" data-i18n-title="help">
+          <span class="icon">❓</span>
+          <span data-i18n="help">Βοήθεια</span>
+        </button>
+        <button class="btn-ghost" id="importBtn">
+          <span class="icon">📂</span>
+          <span data-i18n="import">Άνοιγμα CSV</span>
+        </button>
+        <input type="file" id="csvFileInput" accept=".csv" />
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="active" data-tab="overview">
+        <span>📊</span>
+        <span>Επισκόπηση</span>
+      </button>
+      <button data-tab="transactions">
+        <span>📋</span>
+        <span>Κινήσεις</span>
+      </button>
+      <button data-tab="budgets">
+        <span>🎯</span>
+        <span>Προϋπολογισμοί</span>
+      </button>
+      <button data-tab="insights">
+        <span>💡</span>
+        <span>Ανάλυση</span>
+      </button>
+      <button data-tab="achievements">
+        <span>🏆</span>
+        <span>Επιτεύγματα</span>
+      </button>
+      <button data-tab="goals">
+        <span>🎯</span>
+        <span>Στόχοι</span>
+      </button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div class="tab-content active" id="overview">
+      <div class="layout two-column">
+        <!-- Left: Form -->
+        <section class="section">
+          <h2 class="section-title">
+            <span class="emoji">✍️</span>
+            Νέα Κίνηση
+          </h2>
+
+          <form id="transaction-form">
+            <div class="type-toggle">
+              <input type="radio" name="type" value="income" id="type-income" checked>
+              <label for="type-income">
+                <span>📈</span>
+                <span>Έσοδο</span>
+              </label>
+
+              <input type="radio" name="type" value="expense" id="type-expense">
+              <label for="type-expense">
+                <span>📉</span>
+                <span>Έξοδο</span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label for="amount">Ποσό (€)</label>
+              <input type="number" id="amount" step="0.01" min="0" placeholder="π.χ. 150.50" required />
+            </div>
+
+            <div class="form-group">
+              <label for="category">Κατηγορία</label>
+              <select id="category">
+                <option>Μισθός</option>
+                <option>Freelance</option>
+                <option>Επένδυση</option>
+                <option>Δώρο</option>
+                <option>Τρόφιμα</option>
+                <option>Μεταφορά</option>
+                <option>Ψυχαγωγία</option>
+                <option>Υγεία</option>
+                <option>Εκπαίδευση</option>
+                <option>Λογαριασμοί</option>
+                <option>Ενοίκιο</option>
+                <option>Άλλο</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="date">Ημερομηνία</label>
+              <input type="date" id="date" required />
+            </div>
+
+            <div class="form-group">
+              <label for="description">Περιγραφή (προαιρετικό)</label>
+              <input type="text" id="description" placeholder="π.χ. Αγορές σούπερ μάρκετ" />
+            </div>
+
+            <div class="type-toggle">
+              <input type="checkbox" id="recurring">
+              <label for="recurring">
+                <span>🔄</span>
+                <span>Επαναλαμβανόμενη (μηνιαία)</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn-primary">
+              <span>➕</span>
+              <span>Προσθήκη Κίνησης</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- Right: Summary & Quick Stats -->
+        <section class="section">
+          <h2 class="section-title">
+            <span class="emoji">💰</span>
+            Οικονομική Κατάσταση
+          </h2>
+
+          <div class="summary-grid">
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Ισοζύγιο</span>
+              </div>
+              <div class="card-main">
+                <div class="value" id="balanceValue">
+                  <span>0.00</span>
+                  <span class="currency">EUR</span>
+                </div>
+                <div class="hint" id="balanceTrend">
+                  <span>📊</span>
+                  <span>Ξεκίνα να καταγράφεις</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Έσοδα</span>
+                <span class="badge-soft">+</span>
+              </div>
+              <div class="card-main">
+                <div class="value amount-pos" id="incomeValue">
+                  <span>0.00</span>
+                  <span class="currency">EUR</span>
+                </div>
+                <div class="hint">
+                  <span>💰</span>
+                  <span>Συνολικά</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Έξοδα</span>
+                <span class="badge-soft">−</span>
+              </div>
+              <div class="card-main">
+                <div class="value amount-neg" id="expenseValue">
+                  <span>0.00</span>
+                  <span class="currency">EUR</span>
+                </div>
+                <div class="hint">
+                  <span>💸</span>
+                  <span>Συνολικά</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Ποσοστό Αποταμίευσης</span>
+              </div>
+              <div class="card-main">
+                <div class="value" id="savingsRate">
+                  <span>0</span>
+                  <span class="currency">%</span>
+                </div>
+                <div class="hint">
+                  <span>🎯</span>
+                  <span>Στόχος: 20%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="section-title" style="margin-top: 20px;">
+            <span class="emoji">📈</span>
+            Κατανομή Εξόδων
+          </h3>
+          <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Transactions Tab -->
+    <div class="tab-content" id="transactions">
+      <section class="section">
+        <h2 class="section-title">
+          <span class="emoji">📋</span>
+          Ιστορικό Κινήσεων
+        </h2>
+
+        <div class="filter-bar">
+          <select id="filterType">
+            <option value="all">Όλες οι κινήσεις</option>
+            <option value="income">Μόνο έσοδα</option>
+            <option value="expense">Μόνο έξοδα</option>
+          </select>
+          <select id="filterCategory">
+            <option value="all">Όλες οι κατηγορίες</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Ημερομηνία</th>
+                <th>Περιγραφή</th>
+                <th>Κατηγορία</th>
+                <th>Τύπος</th>
+                <th>Ποσό</th>
+                <th>Ενέργειες</th>
+              </tr>
+            </thead>
+            <tbody id="transactionsBody"></tbody>
+          </table>
+          <div class="empty-state" id="emptyState">
+            Δεν υπάρχουν ακόμη καταχωρήσεις. Πρόσθεσε την πρώτη σου κίνηση! ✨
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button class="btn-danger" id="clearAllBtn">
+            <span>🗑️</span>
+            <span>Διαγραφή Όλων</span>
+          </button>
+          <button class="btn-success" id="exportBtn">
+            <span>💾</span>
+            <span>Εξαγωγή CSV</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Budgets Tab -->
+    <div class="tab-content" id="budgets">
+      <section class="section">
+        <h2 class="section-title">
+          <span class="emoji">🎯</span>
+          Μηνιαίοι Προϋπολογισμοί
+        </h2>
+
+        <button class="btn-primary" id="addBudgetBtn" style="margin-bottom: 20px;">
+          <span>➕</span>
+          <span>Προσθήκη Προϋπολογισμού</span>
+        </button>
+
+        <div id="budgetsList"></div>
+      </section>
+    </div>
+
+    <!-- Insights Tab -->
+    <div class="tab-content" id="insights">
+      <section class="section">
+        <h2 class="section-title">
+          <span class="emoji">💡</span>
+          Έξυπνες Αναλύσεις
+        </h2>
+
+        <div id="insightsList"></div>
+
+        <h3 class="section-title" style="margin-top: 24px;">
+          <span class="emoji">📊</span>
+          Μηνιαία Σύγκριση
+        </h3>
+        <div class="chart-container">
+          <canvas id="trendsChart"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <!-- Achievements Tab -->
+    <div class="tab-content" id="achievements">
+      <section class="section">
+        <h2 class="section-title">
+          <span class="emoji">🏆</span>
+          Τα Επιτεύγματά Σου
+        </h2>
+
+        <div class="achievement-grid" id="achievementsList"></div>
+      </section>
+    </div>
+
+    <!-- Savings Goals Tab -->
+    <div class="tab-content" id="goals">
+      <section class="section">
+        <h2 class="section-title">
+          <span class="emoji">🎯</span>
+          Στόχοι Αποταμίευσης
+        </h2>
+
+        <button class="btn-primary" id="addGoalBtn" style="margin-bottom: 20px;">
+          <span>➕</span>
+          <span>Νέος Στόχος</span>
+        </button>
+
+        <div id="goalsList"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Budget Modal -->
+  <div class="modal" id="budgetModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>🎯</span>
+          <span>Νέος Προϋπολογισμός</span>
+        </h3>
+        <button class="modal-close" id="closeBudgetModal">✕</button>
+      </div>
+
+      <form id="budgetForm">
+        <div class="form-group">
+          <label for="budgetCategory">Κατηγορία</label>
+          <select id="budgetCategory" required>
+            <option>Τρόφιμα</option>
+            <option>Μεταφορά</option>
+            <option>Ψυχαγωγία</option>
+            <option>Υγεία</option>
+            <option>Εκπαίδευση</option>
+            <option>Λογαριασμοί</option>
+            <option>Ενοίκιο</option>
+            <option>Άλλο</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="budgetAmount">Μηνιαίο Όριο (€)</label>
+          <input type="number" id="budgetAmount" step="0.01" min="0" required />
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span>💾</span>
+          <span>Αποθήκευση</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Savings Goal Modal -->
+  <div class="modal" id="goalModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>🎯</span>
+          <span id="goalModalTitle">Νέος Στόχος Αποταμίευσης</span>
+        </h3>
+        <button class="modal-close" id="closeGoalModal">✕</button>
+      </div>
+
+      <form id="goalForm">
+        <div class="form-group">
+          <label for="goalName">Όνομα Στόχου</label>
+          <input type="text" id="goalName" placeholder="π.χ. Διακοπές στην Ιταλία" required />
+        </div>
+
+        <div class="form-group">
+          <label for="goalAmount">Ποσό Στόχου (€)</label>
+          <input type="number" id="goalAmount" step="0.01" min="0" required />
+        </div>
+
+        <div class="form-group">
+          <label for="goalCurrent">Τρέχον Ποσό (€)</label>
+          <input type="number" id="goalCurrent" step="0.01" min="0" value="0" required />
+        </div>
+
+        <div class="form-group">
+          <label for="goalDeadline">Ημερομηνία Στόχου</label>
+          <input type="date" id="goalDeadline" required />
+        </div>
+
+        <div class="form-group">
+          <label for="goalIcon">Εικονίδιο (προαιρετικό)</label>
+          <select id="goalIcon">
+            <option value="🏖️">🏖️ Διακοπές</option>
+            <option value="🏠">🏠 Σπίτι</option>
+            <option value="🚗">🚗 Αυτοκίνητο</option>
+            <option value="💍">💍 Γάμος</option>
+            <option value="🎓">🎓 Εκπαίδευση</option>
+            <option value="💻">💻 Laptop</option>
+            <option value="📱">📱 Smartphone</option>
+            <option value="🎮">🎮 Gaming</option>
+            <option value="💰">💰 Επείγον Ταμείο</option>
+            <option value="🎸">🎸 Χόμπι</option>
+            <option value="✈️">✈️ Ταξίδι</option>
+            <option value="🎁">🎁 Δώρο</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span>💾</span>
+          <span>Αποθήκευση Στόχου</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Welcome/Info Modal -->
+  <div class="modal active" id="welcomeModal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>👋</span>
+          <span>Καλώς ήρθες στον Οικονομικό Διαχειριστή Pro!</span>
+        </h3>
+        <button class="modal-close" id="closeWelcomeModal">✕</button>
+      </div>
+
+      <div style="padding: 0 4px;">
+        <!-- Privacy Section -->
+        <div style="background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.05)); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="font-size: 2rem;">🔒</div>
+            <div>
+              <h4 style="margin: 0 0 8px; font-size: 1rem; color: var(--success);">100% Ιδιωτικότητα & Ασφάλεια</h4>
+              <p style="margin: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-muted);">
+                <strong style="color: var(--text);">Τα δεδομένα σου είναι πλήρως ασφαλή!</strong> Όλες οι πληροφορίες αποθηκεύονται 
+                <strong style="color: var(--success);">αποκλειστικά στη συσκευή σου</strong> (localStorage). 
+                Δεν αποστέλλεται τίποτα στο cloud, δεν υπάρχουν servers, και κανείς δεν έχει πρόσβαση στα οικονομικά σου δεδομένα εκτός από εσένα!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How to Use Section -->
+        <div style="margin-bottom: 20px;">
+          <h4 style="margin: 0 0 16px; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+            <span>📚</span>
+            <span>Πώς να χρησιμοποιήσεις την εφαρμογή</span>
+          </h4>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Step 1 -->
+            <div style="display: flex; gap: 12px; align-items: start;">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">1</div>
+              <div>
+                <strong style="color: var(--text); font-size: 0.9rem;">Πρόσθεσε Κινήσεις</strong>
+                <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+                  Από την καρτέλα <strong>"Επισκόπηση"</strong>, πρόσθεσε έσοδα και έξοδα. Επίλεξε κατηγορία, ποσό και ημερομηνία.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div style="display: flex; gap: 12px; align-items: start;">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">2</div>
+              <div>
+                <strong style="color: var(--text); font-size: 0.9rem;">Όρισε Προϋπολογισμούς</strong>
+                <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+                  Στην καρτέλα <strong>"Προϋπολογισμοί"</strong>, όρισε μηνιαία όρια για κάθε κατηγορία (π.χ. Τρόφιμα: 300€).
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div style="display: flex; gap: 12px; align-items: start;">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">3</div>
+              <div>
+                <strong style="color: var(--text); font-size: 0.9rem;">Δημιούργησε Στόχους</strong>
+                <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+                  Στην καρτέλα <strong>"Στόχοι"</strong>, φτιάξε στόχους αποταμίευσης (π.χ. Διακοπές: 2000€ μέχρι Ιούλιο).
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div style="display: flex; gap: 12px; align-items: start;">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">4</div>
+              <div>
+                <strong style="color: var(--text); font-size: 0.9rem;">Δες Αναλύσεις & Επιτεύγματα</strong>
+                <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+                  Στις καρτέλες <strong>"Ανάλυση"</strong> και <strong>"Επιτεύγματα"</strong>, δες τις συνήθειές σου και ξεκλείδωσε achievements!
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div style="display: flex; gap: 12px; align-items: start;">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">5</div>
+              <div>
+                <strong style="color: var(--text); font-size: 0.9rem;">Εξαγωγή & Εισαγωγή</strong>
+                <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+                  Χρησιμοποίησε το <strong>"Εξαγωγή CSV"</strong> για backup και <strong>"Άνοιγμα CSV"</strong> για να επαναφέρεις δεδομένα.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 10px; font-size: 0.9rem; color: var(--accent); display: flex; align-items: center; gap: 6px;">
+            <span>💡</span>
+            <span>Συμβουλές</span>
+          </h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.8;">
+            <li>Κάνε τακτικά backup με <strong>Εξαγωγή CSV</strong></li>
+            <li>Σημείωσε επαναλαμβανόμενα έξοδα (π.χ. ενοίκιο) με το 🔄</li>
+            <li>Στόχευσε σε ποσοστό αποταμίευσης τουλάχιστον 20%</li>
+            <li>Έλεγχε την καρτέλα "Ανάλυση" για έξυπνες συμβουλές</li>
+          </ul>
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn-primary" id="startUsingApp" style="margin-top: 10px;">
+          <span>🚀</span>
+          <span>Ας Ξεκινήσουμε!</span>
+        </button>
+
+        <!-- Footer Note -->
+        <div style="margin-top: 16px; text-align: center;">
+          <label style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+            <input type="checkbox" id="dontShowAgain" style="cursor: pointer;">
+            <span>Να μην εμφανιστεί ξανά</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "financeTransactions_v2";
+      const BUDGET_KEY = "financeBudgets_v2";
+      const GOALS_KEY = "financeGoals_v2";
+      const WELCOME_KEY = "financeWelcomeSeen_v2";
+      const LANG_KEY = "financeLanguage_v2";
+
+      let transactions = [];
+      let budgets = {};
+      let goals = [];
+      let expenseChart = null;
+      let trendsChart = null;
+      let editingGoalId = null;
+      let currentLang = 'el'; // Default language
+
+      // Translation dictionary
+      const translations = {
+        el: {
+          // Header
+          appTitle: "Οικονομικός Διαχειριστή",
+          appSubtitle: "Έξυπνη διαχείριση & ανάλυση",
+          live: "Live",
+          help: "Βοήθεια",
+          import: "Άνοιγμα CSV",
+          
+          // Tabs
+          tabOverview: "Επισκόπηση",
+          tabTransactions: "Κινήσεις",
+          tabBudgets: "Προϋπολογισμοί",
+          tabInsights: "Ανάλυση",
+          tabAchievements: "Επιτεύγματα",
+          tabGoals: "Στόχοι",
+          
+          // Overview
+          newTransaction: "Νέα Κίνηση",
+          income: "Έσοδο",
+          expense: "Έξοδο",
+          amount: "Ποσό (€)",
+          amountPlaceholder: "π.χ. 150.50",
+          category: "Κατηγορία",
+          date: "Ημερομηνία",
+          description: "Περιγραφή (προαιρετικό)",
+          descriptionPlaceholder: "π.χ. Αγορές σούπερ μάρκετ",
+          recurring: "Επαναλαμβανόμενη (μηνιαία)",
+          addTransaction: "Προσθήκη Κίνησης",
+          
+          // Summary cards
+          balance: "Ισοζύγιο",
+          totalIncome: "Έσοδα",
+          totalExpense: "Έξοδα",
+          savingsRate: "Ποσοστό Αποταμίευσης",
+          total: "Συνολικά",
+          target: "Στόχος",
+          positiveBalance: "Είσαι σε θετικό ισοζύγιο",
+          negativeBalance: "Προσοχή στα έξοδα",
+          startTracking: "Ξεκίνα να καταγράφεις",
+          expenseDistribution: "Κατανομή Εξόδων",
+          
+          // Categories
+          salary: "Μισθός",
+          freelance: "Freelance",
+          investment: "Επένδυση",
+          gift: "Δώρο",
+          food: "Τρόφιμα",
+          transport: "Μεταφορά",
+          entertainment: "Ψυχαγωγία",
+          health: "Υγεία",
+          education: "Εκπαίδευση",
+          bills: "Λογαριασμοί",
+          rent: "Ενοίκιο",
+          other: "Άλλο",
+          
+          // Transactions
+          transactionsHistory: "Ιστορικό Κινήσεων",
+          allTransactions: "Όλες οι κινήσεις",
+          incomeOnly: "Μόνο έσοδα",
+          expenseOnly: "Μόνο έξοδα",
+          allCategories: "Όλες οι κατηγορίες",
+          dateColumn: "Ημερομηνία",
+          descriptionColumn: "Περιγραφή",
+          categoryColumn: "Κατηγορία",
+          typeColumn: "Τύπος",
+          amountColumn: "Ποσό",
+          actionsColumn: "Ενέργειες",
+          deleteBtn: "Διαγραφή",
+          deleteAll: "Διαγραφή Όλων",
+          exportCSV: "Εξαγωγή CSV",
+          emptyState: "Δεν υπάρχουν ακόμη καταχωρήσεις. Πρόσθεσε την πρώτη σου κίνηση!",
+          
+          // Budgets
+          monthlyBudgets: "Μηνιαίοι Προϋπολογισμοί",
+          addBudget: "Προσθήκη Προϋπολογισμού",
+          newBudget: "Νέος Προϋπολογισμός",
+          monthlyLimit: "Μηνιαίο Όριο (€)",
+          save: "Αποθήκευση",
+          remaining: "Απομένουν",
+          exceeded: "Υπέρβαση κατά",
+          spent: "Ξοδεύτηκαν",
+          
+          // Goals
+          savingsGoals: "Στόχοι Αποταμίευσης",
+          newGoal: "Νέος Στόχος",
+          editGoal: "Επεξεργασία Στόχου",
+          goalName: "Όνομα Στόχου",
+          goalNamePlaceholder: "π.χ. Διακοπές στην Ιταλία",
+          targetAmount: "Ποσό Στόχου (€)",
+          currentAmount: "Τρέχον Ποσό (€)",
+          goalDeadline: "Ημερομηνία Στόχου",
+          goalIcon: "Εικονίδιο (προαιρετικό)",
+          saveGoal: "Αποθήκευση Στόχου",
+          addAmount: "Προσθήκη Ποσού",
+          daysRemaining: "μέρες",
+          today: "Σήμερα!",
+          expired: "Έληξε",
+          monthly: "Μηνιαία",
+          status: "Κατάσταση",
+          inProgress: "Σε εξέλιξη",
+          completed: "Επιτεύχθηκε!",
+          edit: "Επεξεργασία",
+          delete: "Διαγραφή",
+          
+          // Insights
+          smartInsights: "Έξυπνες Αναλύσεις",
+          monthlyComparison: "Μηνιαία Σύγκριση",
+          greatProgress: "Εξαιρετική Πρόοδος!",
+          expenseIncrease: "Αύξηση Εξόδων",
+          topCategory: "Κορυφαία Κατηγορία",
+          budgetWarning: "Προσοχή στον Προϋπολογισμό",
+          budgetExceeded: "Υπέρβαση Προϋπολογισμού",
+          excellentSavings: "Εξαιρετική Αποταμίευση!",
+          thinkAboutSavings: "Σκέψου την Αποταμίευση",
+          keepTracking: "Συνέχισε την Καταγραφή",
+          
+          // Achievements
+          yourAchievements: "Τα Επιτεύγματά Σου",
+          firstStep: "Πρώτο Βήμα",
+          firstStepDesc: "Πρόσθεσε την πρώτη σου κίνηση",
+          weekStreak: "Εβδομαδιαίο Ρυθμό",
+          weekStreakDesc: "Καταγραφή για 7 μέρες",
+          saver: "Αποταμιευτής",
+          saverDesc: "Θετικό ισοζύγιο 100€+",
+          budgetMaster: "Δάσκαλος Budget",
+          budgetMasterDesc: "Όρισε 3 προϋπολογισμούς",
+          bigSaver: "Μεγάλος Αποταμιευτής",
+          bigSaverDesc: "Θετικό ισοζύγιο 500€+",
+          organized: "Οργανωμένος",
+          organizedDesc: "50+ καταγεγραμμένες κινήσεις",
+          
+          // Welcome Modal
+          welcome: "Καλώς ήρθες στον Οικονομικό Διαχειριστή Pro!",
+          privacyTitle: "100% Ιδιωτικότητα & Ασφάλεια",
+          privacyText: "Τα δεδομένα σου είναι πλήρως ασφαλή! Όλες οι πληροφορίες αποθηκεύονται αποκλειστικά στη συσκευή σου (localStorage). Δεν αποστέλλεται τίποτα στο cloud, δεν υπάρχουν servers, και κανείς δεν έχει πρόσβαση στα οικονομικά σου δεδομένα εκτός από εσένα!",
+          howToUse: "Πώς να χρησιμοποιήσεις την εφαρμογή",
+          step1Title: "Πρόσθεσε Κινήσεις",
+          step1Text: "Από την καρτέλα \"Επισκόπηση\", πρόσθεσε έσοδα και έξοδα. Επίλεξε κατηγορία, ποσό και ημερομηνία.",
+          step2Title: "Όρισε Προϋπολογισμούς",
+          step2Text: "Στην καρτέλα \"Προϋπολογισμοί\", όρισε μηνιαία όρια για κάθε κατηγορία (π.χ. Τρόφιμα: 300€).",
+          step3Title: "Δημιούργησε Στόχους",
+          step3Text: "Στην καρτέλα \"Στόχοι\", φτιάξε στόχους αποταμίευσης (π.χ. Διακοπές: 2000€ μέχρι Ιούλιο).",
+          step4Title: "Δες Αναλύσεις & Επιτεύγματα",
+          step4Text: "Στις καρτέλες \"Ανάλυση\" και \"Επιτεύγματα\", δες τις συνήθειές σου και ξεκλείδωσε achievements!",
+          step5Title: "Εξαγωγή & Εισαγωγή",
+          step5Text: "Χρησιμοποίησε το \"Εξαγωγή CSV\" για backup και \"Άνοιγμα CSV\" για να επαναφέρεις δεδομένα.",
+          tips: "Συμβουλές",
+          tip1: "Κάνε τακτικά backup με Εξαγωγή CSV",
+          tip2: "Σημείωσε επαναλαμβανόμενα έξοδα (π.χ. ενοίκιο) με το 🔄",
+          tip3: "Στόχευσε σε ποσοστό αποταμίευσης τουλάχιστον 20%",
+          tip4: "Έλεγχε την καρτέλα \"Ανάλυση\" για έξυπνες συμβουλές",
+          letsStart: "Ας Ξεκινήσουμε!",
+          dontShowAgain: "Να μην εμφανιστεί ξανά",
+          
+          // Messages
+          fillCorrectly: "Συμπλήρωσε σωστά το ποσό και την ημερομηνία.",
+          transactionAdded: "Η κίνηση προστέθηκε επιτυχώς! ✓",
+          transactionDeleted: "Η εγγραφή διαγράφηκε.",
+          allDeleted: "Όλες οι εγγραφές διαγράφηκαν.",
+          confirmDelete: "Σίγουρα θέλεις να διαγράψεις αυτή την εγγραφή;",
+          confirmDeleteAll: "Θες σίγουρα να διαγράψεις ΟΛΕΣ τις εγγραφές; Η ενέργεια δεν αναιρείται.",
+          noDataToExport: "Δεν υπάρχουν δεδομένα για εξαγωγή.",
+          csvExported: "Το αρχείο CSV εξήχθη επιτυχώς! 💾",
+          csvImported: "Εισήχθησαν {count} εγγραφές! ✓",
+          importChoice: "Βρέθηκαν {count} εγγραφές.\n\nOK = Αντικατάσταση\nCancel = Προσθήκη",
+          budgetSet: "Προϋπολογισμός για \"{category}\" ορίστηκε! 🎯",
+          goalCreated: "Στόχος \"{name}\" δημιουργήθηκε! 🎯",
+          goalUpdated: "Ο στόχος ενημερώθηκε! ✓",
+          goalDeleted: "Ο στόχος διαγράφηκε.",
+          confirmDeleteGoal: "Σίγουρα θέλεις να διαγράψεις το στόχο \"{name}\";",
+          amountAdded: "Προστέθηκαν {amount}€ στο στόχο! 💰",
+          goalCompleted: "🎉 Συγχαρητήρια! Έφτασες το στόχο σου: {name}!",
+          howMuchToAdd: "Πόσα θέλεις να προσθέσεις στο στόχο \"{name}\"?\n\nΑπομένουν: {remaining}€",
+          invalidAmount: "Μη έγκυρο ποσό.",
+          positiveAmount: "Το ποσό πρέπει να είναι θετικό.",
+          currentCantExceedTarget: "Το τρέχον ποσό δεν μπορεί να είναι μεγαλύτερο από το στόχο.",
+          deadlineInPast: "Η ημερομηνία στόχου είναι στο παρελθόν. Θέλεις να συνεχίσεις;",
+          fillAllFields: "Συμπλήρωσε σωστά όλα τα πεδία.",
+        },
+        en: {
+          // Header
+          appTitle: "Financial Manager",
+          appSubtitle: "Smart management & analysis",
+          live: "Live",
+          help: "Help",
+          import: "Open CSV",
+          
+          // Tabs
+          tabOverview: "Overview",
+          tabTransactions: "Transactions",
+          tabBudgets: "Budgets",
+          tabInsights: "Insights",
+          tabAchievements: "Achievements",
+          tabGoals: "Goals",
+          
+          // Overview
+          newTransaction: "New Transaction",
+          income: "Income",
+          expense: "Expense",
+          amount: "Amount (€)",
+          amountPlaceholder: "e.g. 150.50",
+          category: "Category",
+          date: "Date",
+          description: "Description (optional)",
+          descriptionPlaceholder: "e.g. Grocery shopping",
+          recurring: "Recurring (monthly)",
+          addTransaction: "Add Transaction",
+          
+          // Summary cards
+          balance: "Balance",
+          totalIncome: "Income",
+          totalExpense: "Expenses",
+          savingsRate: "Savings Rate",
+          total: "Total",
+          target: "Target",
+          positiveBalance: "You have a positive balance",
+          negativeBalance: "Watch your expenses",
+          startTracking: "Start tracking",
+          expenseDistribution: "Expense Distribution",
+          
+          // Categories
+          salary: "Salary",
+          freelance: "Freelance",
+          investment: "Investment",
+          gift: "Gift",
+          food: "Food",
+          transport: "Transport",
+          entertainment: "Entertainment",
+          health: "Health",
+          education: "Education",
+          bills: "Bills",
+          rent: "Rent",
+          other: "Other",
+          
+          // Transactions
+          transactionsHistory: "Transaction History",
+          allTransactions: "All transactions",
+          incomeOnly: "Income only",
+          expenseOnly: "Expenses only",
+          allCategories: "All categories",
+          dateColumn: "Date",
+          descriptionColumn: "Description",
+          categoryColumn: "Category",
+          typeColumn: "Type",
+          amountColumn: "Amount",
+          actionsColumn: "Actions",
+          deleteBtn: "Delete",
+          deleteAll: "Delete All",
+          exportCSV: "Export CSV",
+          emptyState: "No entries yet. Add your first transaction!",
+          
+          // Budgets
+          monthlyBudgets: "Monthly Budgets",
+          addBudget: "Add Budget",
+          newBudget: "New Budget",
+          monthlyLimit: "Monthly Limit (€)",
+          save: "Save",
+          remaining: "Remaining",
+          exceeded: "Exceeded by",
+          spent: "Spent",
+          
+          // Goals
+          savingsGoals: "Savings Goals",
+          newGoal: "New Goal",
+          editGoal: "Edit Goal",
+          goalName: "Goal Name",
+          goalNamePlaceholder: "e.g. Italy Vacation",
+          targetAmount: "Target Amount (€)",
+          currentAmount: "Current Amount (€)",
+          goalDeadline: "Target Date",
+          goalIcon: "Icon (optional)",
+          saveGoal: "Save Goal",
+          addAmount: "Add Amount",
+          daysRemaining: "days",
+          today: "Today!",
+          expired: "Expired",
+          monthly: "Monthly",
+          status: "Status",
+          inProgress: "In Progress",
+          completed: "Completed!",
+          edit: "Edit",
+          delete: "Delete",
+          
+          // Insights
+          smartInsights: "Smart Insights",
+          monthlyComparison: "Monthly Comparison",
+          greatProgress: "Great Progress!",
+          expenseIncrease: "Expense Increase",
+          topCategory: "Top Category",
+          budgetWarning: "Budget Warning",
+          budgetExceeded: "Budget Exceeded",
+          excellentSavings: "Excellent Savings!",
+          thinkAboutSavings: "Think About Savings",
+          keepTracking: "Keep Tracking",
+          
+          // Achievements
+          yourAchievements: "Your Achievements",
+          firstStep: "First Step",
+          firstStepDesc: "Add your first transaction",
+          weekStreak: "Week Streak",
+          weekStreakDesc: "Track for 7 days",
+          saver: "Saver",
+          saverDesc: "Positive balance of €100+",
+          budgetMaster: "Budget Master",
+          budgetMasterDesc: "Set 3 budgets",
+          bigSaver: "Big Saver",
+          bigSaverDesc: "Positive balance of €500+",
+          organized: "Organized",
+          organizedDesc: "50+ tracked transactions",
+          
+          // Welcome Modal
+          welcome: "Welcome to Financial Manager Pro!",
+          privacyTitle: "100% Privacy & Security",
+          privacyText: "Your data is completely safe! All information is stored exclusively on your device (localStorage). Nothing is sent to the cloud, there are no servers, and no one has access to your financial data except you!",
+          howToUse: "How to use the app",
+          step1Title: "Add Transactions",
+          step1Text: "From the \"Overview\" tab, add income and expenses. Select category, amount and date.",
+          step2Title: "Set Budgets",
+          step2Text: "In the \"Budgets\" tab, set monthly limits for each category (e.g. Food: €300).",
+          step3Title: "Create Goals",
+          step3Text: "In the \"Goals\" tab, create savings goals (e.g. Vacation: €2000 by July).",
+          step4Title: "View Analytics & Achievements",
+          step4Text: "In the \"Insights\" and \"Achievements\" tabs, see your habits and unlock achievements!",
+          step5Title: "Export & Import",
+          step5Text: "Use \"Export CSV\" for backup and \"Open CSV\" to restore data.",
+          tips: "Tips",
+          tip1: "Make regular backups with Export CSV",
+          tip2: "Mark recurring expenses (e.g. rent) with 🔄",
+          tip3: "Aim for a savings rate of at least 20%",
+          tip4: "Check the \"Insights\" tab for smart tips",
+          letsStart: "Let's Get Started!",
+          dontShowAgain: "Don't show again",
+          
+          // Messages
+          fillCorrectly: "Please fill in the amount and date correctly.",
+          transactionAdded: "Transaction added successfully! ✓",
+          transactionDeleted: "Entry deleted.",
+          allDeleted: "All entries deleted.",
+          confirmDelete: "Are you sure you want to delete this entry?",
+          confirmDeleteAll: "Are you sure you want to delete ALL entries? This action cannot be undone.",
+          noDataToExport: "No data to export.",
+          csvExported: "CSV file exported successfully! 💾",
+          csvImported: "{count} entries imported! ✓",
+          importChoice: "Found {count} entries.\n\nOK = Replace\nCancel = Add",
+          budgetSet: "Budget for \"{category}\" set! 🎯",
+          goalCreated: "Goal \"{name}\" created! 🎯",
+          goalUpdated: "Goal updated! ✓",
+          goalDeleted: "Goal deleted.",
+          confirmDeleteGoal: "Are you sure you want to delete the goal \"{name}\"?",
+          amountAdded: "Added {amount}€ to goal! 💰",
+          goalCompleted: "🎉 Congratulations! You reached your goal: {name}!",
+          howMuchToAdd: "How much do you want to add to goal \"{name}\"?\n\nRemaining: {remaining}€",
+          invalidAmount: "Invalid amount.",
+          positiveAmount: "Amount must be positive.",
+          currentCantExceedTarget: "Current amount cannot exceed target.",
+          deadlineInPast: "Target date is in the past. Do you want to continue?",
+          fillAllFields: "Please fill in all fields correctly.",
+        }
+      };
+
+      // Translation function
+      function t(key) {
+        return translations[currentLang][key] || key;
+      }
+
+      // Update all text content based on current language
+      function updateLanguage() {
+        // Update all elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          el.textContent = t(key);
+        });
+
+        // Update placeholders
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          el.placeholder = t(key);
+        });
+
+        // Update titles
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+          const key = el.getAttribute('data-i18n-title');
+          el.title = t(key);
+        });
+
+        // Update specific elements
+        document.querySelector('.title-text h1').childNodes[0].textContent = t('appTitle') + ' ';
+        document.querySelector('.title-text p').textContent = t('appSubtitle');
+
+        // Update current language indicator
+        document.getElementById('currentLang').textContent = currentLang.toUpperCase();
+
+        // Update category options
+        updateCategoryOptions();
+
+        // Re-render everything
+        render();
+        renderCharts();
+        
+        // Update active tab content
+        const activeTab = document.querySelector('.tab-content.active');
+        if (activeTab) {
+          const tabId = activeTab.id;
+          if (tabId === 'insights') renderInsights();
+          if (tabId === 'achievements') renderAchievements();
+          if (tabId === 'goals') renderGoals();
+          if (tabId === 'budgets') renderBudgets();
+        }
+
+        // Save language preference
+        localStorage.setItem(LANG_KEY, currentLang);
+      }
+
+      function updateCategoryOptions() {
+        const categorySelects = [categoryInput, budgetCategoryInput, filterCategory];
+        const categories = [
+          { key: 'salary', value: t('salary') },
+          { key: 'freelance', value: t('freelance') },
+          { key: 'investment', value: t('investment') },
+          { key: 'gift', value: t('gift') },
+          { key: 'food', value: t('food') },
+          { key: 'transport', value: t('transport') },
+          { key: 'entertainment', value: t('entertainment') },
+          { key: 'health', value: t('health') },
+          { key: 'education', value: t('education') },
+          { key: 'bills', value: t('bills') },
+          { key: 'rent', value: t('rent') },
+          { key: 'other', value: t('other') }
+        ];
+
+        categorySelects.forEach(select => {
+          if (!select) return;
+          const currentValue = select.value;
+          const isFilterCategory = select === filterCategory;
+          
+          select.innerHTML = '';
+          
+          if (isFilterCategory) {
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = t('allCategories');
+            select.appendChild(allOption);
+          }
+          
+          categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.value;
+            option.textContent = cat.value;
+            select.appendChild(option);
+          });
+          
+          if (currentValue && !isFilterCategory) {
+            select.value = currentValue;
+          } else if (isFilterCategory) {
+            select.value = 'all';
+          }
+        });
+      }
+
+      // Achievement definitions
+      const ACHIEVEMENTS = [
+        { id: 'first_transaction', icon: '🎉', title: 'Πρώτο Βήμα', desc: 'Πρόσθεσε την πρώτη σου κίνηση', check: () => transactions.length >= 1 },
+        { id: 'week_streak', icon: '🔥', title: 'Εβδομαδιαίο Ρυθμό', desc: 'Καταγραφή για 7 μέρες', check: () => false }, // Simplified
+        { id: 'saver', icon: '💎', title: 'Αποταμιευτής', desc: 'Θετικό ισοζύγιο 100€+', check: () => calculateBalance() >= 100 },
+        { id: 'budget_master', icon: '🎯', title: 'Δάσκαλος Budget', desc: 'Όρισε 3 προϋπολογισμούς', check: () => Object.keys(budgets).length >= 3 },
+        { id: 'big_saver', icon: '🏆', title: 'Μεγάλος Αποταμιευτής', desc: 'Θετικό ισοζύγιο 500€+', check: () => calculateBalance() >= 500 },
+        { id: 'organized', icon: '📊', title: 'Οργανωμένος', desc: '50+ καταγεγραμμένες κινήσεις', check: () => transactions.length >= 50 }
+      ];
+
+      // DOM Elements
+      const form = document.getElementById("transaction-form");
+      const amountInput = document.getElementById("amount");
+      const categoryInput = document.getElementById("category");
+      const dateInput = document.getElementById("date");
+      const descriptionInput = document.getElementById("description");
+      const recurringInput = document.getElementById("recurring");
+
+      const balanceValue = document.getElementById("balanceValue");
+      const incomeValue = document.getElementById("incomeValue");
+      const expenseValue = document.getElementById("expenseValue");
+      const savingsRate = document.getElementById("savingsRate");
+      const balanceTrend = document.getElementById("balanceTrend");
+
+      const filterType = document.getElementById("filterType");
+      const filterCategory = document.getElementById("filterCategory");
+      const transactionsBody = document.getElementById("transactionsBody");
+      const emptyState = document.getElementById("emptyState");
+      const clearAllBtn = document.getElementById("clearAllBtn");
+      const exportBtn = document.getElementById("exportBtn");
+      const importBtn = document.getElementById("importBtn");
+      const csvFileInput = document.getElementById("csvFileInput");
+      const toast = document.getElementById("toast");
+
+      const budgetsList = document.getElementById("budgetsList");
+      const addBudgetBtn = document.getElementById("addBudgetBtn");
+      const budgetModal = document.getElementById("budgetModal");
+      const closeBudgetModal = document.getElementById("closeBudgetModal");
+      const budgetForm = document.getElementById("budgetForm");
+      const budgetCategoryInput = document.getElementById("budgetCategory");
+      const budgetAmountInput = document.getElementById("budgetAmount");
+
+      const insightsList = document.getElementById("insightsList");
+      const achievementsList = document.getElementById("achievementsList");
+
+      const goalsList = document.getElementById("goalsList");
+      const addGoalBtn = document.getElementById("addGoalBtn");
+      const goalModal = document.getElementById("goalModal");
+      const closeGoalModal = document.getElementById("closeGoalModal");
+      const goalForm = document.getElementById("goalForm");
+      const goalNameInput = document.getElementById("goalName");
+      const goalAmountInput = document.getElementById("goalAmount");
+      const goalCurrentInput = document.getElementById("goalCurrent");
+      const goalDeadlineInput = document.getElementById("goalDeadline");
+      const goalIconInput = document.getElementById("goalIcon");
+      const goalModalTitle = document.getElementById("goalModalTitle");
+
+      const welcomeModal = document.getElementById("welcomeModal");
+      const closeWelcomeModal = document.getElementById("closeWelcomeModal");
+      const startUsingApp = document.getElementById("startUsingApp");
+      const dontShowAgain = document.getElementById("dontShowAgain");
+      const helpBtn = document.getElementById("helpBtn");
+      const langBtn = document.getElementById("langBtn");
+
+      // Tab navigation
+      document.querySelectorAll('.tab-nav button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.dataset.tab;
+          document.querySelectorAll('.tab-nav button').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(tabId).classList.add('active');
+          
+          if (tabId === 'overview') renderCharts();
+          if (tabId === 'insights') renderInsights();
+          if (tabId === 'achievements') renderAchievements();
+          if (tabId === 'goals') renderGoals();
+        });
+      });
+
+      function init() {
+        dateInput.valueAsNumber = Date.now() - new Date().getTimezoneOffset() * 60000;
+
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          try {
+            transactions = JSON.parse(stored);
+          } catch (e) {
+            console.error("Failed to parse transactions", e);
+          }
+        }
+
+        const storedBudgets = localStorage.getItem(BUDGET_KEY);
+        if (storedBudgets) {
+          try {
+            budgets = JSON.parse(storedBudgets);
+          } catch (e) {
+            console.error("Failed to parse budgets", e);
+          }
+        }
+
+        const storedGoals = localStorage.getItem(GOALS_KEY);
+        if (storedGoals) {
+          try {
+            goals = JSON.parse(storedGoals);
+          } catch (e) {
+            console.error("Failed to parse goals", e);
+          }
+        }
+
+        updateCategoryFilter();
+        render();
+        renderCharts();
+
+        // Load saved language
+        const savedLang = localStorage.getItem(LANG_KEY);
+        if (savedLang && (savedLang === 'el' || savedLang === 'en')) {
+          currentLang = savedLang;
+          updateLanguage();
+        }
+
+        // Check if welcome modal should be shown
+        const welcomeSeen = localStorage.getItem(WELCOME_KEY);
+        if (!welcomeSeen) {
+          setTimeout(() => {
+            welcomeModal.style.display = 'flex';
+          }, 500);
+        }
+      }
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+      }
+
+      function saveBudgets() {
+        localStorage.setItem(BUDGET_KEY, JSON.stringify(budgets));
+      }
+
+      function saveGoals() {
+        localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
+      }
+
+      function showToast(message, type = 'success') {
+        toast.textContent = message;
+        toast.className = `toast ${type}`;
+        toast.style.display = 'block';
+        
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3000);
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        if (!year || !month || !day) return dateStr;
+        return `${day}/${month}/${year.slice(-2)}`;
+      }
+
+      function updateCategoryFilter() {
+        const categories = new Set();
+        transactions.forEach(t => categories.add(t.category));
+        
+        filterCategory.innerHTML = '<option value="all">Όλες οι κατηγορίες</option>';
+        Array.from(categories).sort().forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat;
+          filterCategory.appendChild(option);
+        });
+      }
+
+      function getFilteredTransactions() {
+        return transactions.filter(t => {
+          if (filterType.value !== "all" && t.type !== filterType.value) return false;
+          if (filterCategory.value !== "all" && t.category !== filterCategory.value) return false;
+          return true;
+        });
+      }
+
+      function calculateBalance() {
+        let totalIncome = 0;
+        let totalExpense = 0;
+        transactions.forEach(t => {
+          if (t.type === "income") totalIncome += t.amount;
+          else totalExpense += t.amount;
+        });
+        return totalIncome - totalExpense;
+      }
+
+      function updateSummary() {
+        let totalIncome = 0;
+        let totalExpense = 0;
+        transactions.forEach(t => {
+          if (t.type === "income") totalIncome += t.amount;
+          else totalExpense += t.amount;
+        });
+        const balance = totalIncome - totalExpense;
+        const savingsRateValue = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome * 100) : 0;
+
+        balanceValue.innerHTML = `<span>${balance.toFixed(2)}</span><span class="currency">EUR</span>`;
+        incomeValue.innerHTML = `<span>${totalIncome.toFixed(2)}</span><span class="currency">EUR</span>`;
+        expenseValue.innerHTML = `<span>${totalExpense.toFixed(2)}</span><span class="currency">EUR</span>`;
+        savingsRate.innerHTML = `<span>${savingsRateValue.toFixed(0)}</span><span class="currency">%</span>`;
+
+        if (balance >= 0) {
+          balanceValue.classList.remove("amount-neg");
+          balanceValue.classList.add("amount-pos");
+          balanceTrend.innerHTML = `<span>📈</span><span>${t('positiveBalance')}</span>`;
+        } else {
+          balanceValue.classList.remove("amount-pos");
+          balanceValue.classList.add("amount-neg");
+          balanceTrend.innerHTML = `<span>📉</span><span>${t('negativeBalance')}</span>`;
+        }
+
+        // Update savings rate color
+        if (savingsRateValue >= 20) {
+          savingsRate.classList.remove("amount-warning", "amount-neg");
+          savingsRate.classList.add("amount-pos");
+        } else if (savingsRateValue >= 10) {
+          savingsRate.classList.remove("amount-pos", "amount-neg");
+          savingsRate.classList.add("amount-warning");
+        } else {
+          savingsRate.classList.remove("amount-pos", "amount-warning");
+          savingsRate.classList.add("amount-neg");
+        }
+      }
+
+      function renderTable() {
+        const list = getFilteredTransactions();
+        transactionsBody.innerHTML = "";
+
+        if (!list.length) {
+          emptyState.style.display = "block";
+          return;
+        }
+        emptyState.style.display = "none";
+
+        list.forEach((t, index) => {
+          const tr = document.createElement("tr");
+          tr.style.animationDelay = `${index * 0.05}s`;
+
+          const tdDate = document.createElement("td");
+          tdDate.textContent = formatDate(t.date);
+          tdDate.className = "date-cell";
+
+          const tdDesc = document.createElement("td");
+          tdDesc.textContent = t.description || "—";
+
+          const tdCat = document.createElement("td");
+          tdCat.textContent = t.category;
+
+          const tdType = document.createElement("td");
+          const chip = document.createElement("span");
+          chip.className = "chip-type " + (t.type === "income" ? "chip-income" : "chip-expense");
+          chip.innerHTML = `<span class="dot"></span>${t.type === "income" ? "Έσοδο" : "Έξοδο"}`;
+          tdType.appendChild(chip);
+          
+          if (t.recurring) {
+            const recurringChip = document.createElement("span");
+            recurringChip.className = "chip-type chip-recurring";
+            recurringChip.innerHTML = `🔄`;
+            recurringChip.title = "Επαναλαμβανόμενη";
+            tdType.appendChild(recurringChip);
+          }
+
+          const tdAmount = document.createElement("td");
+          tdAmount.className = "amount-cell " + (t.type === "income" ? "amount-pos" : "amount-neg");
+          const sign = t.type === "income" ? "+" : "-";
+          tdAmount.textContent = `${sign}${t.amount.toFixed(2)} €`;
+
+          const tdActions = document.createElement("td");
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "btn-icon";
+          delBtn.dataset.id = t.id;
+          delBtn.innerHTML = `<span>✕</span><span>Διαγραφή</span>`;
+          tdActions.appendChild(delBtn);
+
+          tr.appendChild(tdDate);
+          tr.appendChild(tdDesc);
+          tr.appendChild(tdCat);
+          tr.appendChild(tdType);
+          tr.appendChild(tdAmount);
+          tr.appendChild(tdActions);
+
+          transactionsBody.appendChild(tr);
+        });
+      }
+
+      function renderBudgets() {
+        budgetsList.innerHTML = "";
+
+        if (Object.keys(budgets).length === 0) {
+          budgetsList.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 40px;">Δεν έχεις ορίσει προϋπολογισμούς ακόμα. Πάτησε το κουμπί παραπάνω για να προσθέσεις!</p>';
+          return;
+        }
+
+        // Calculate current month spending by category
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const monthSpending = {};
+
+        transactions.forEach(t => {
+          if (t.type === 'expense' && t.date.startsWith(currentMonth)) {
+            monthSpending[t.category] = (monthSpending[t.category] || 0) + t.amount;
+          }
+        });
+
+        Object.entries(budgets).forEach(([category, limit]) => {
+          const spent = monthSpending[category] || 0;
+          const percentage = (spent / limit) * 100;
+          const remaining = limit - spent;
+
+          const budgetItem = document.createElement('div');
+          budgetItem.className = 'budget-item';
+          
+          let progressClass = '';
+          if (percentage >= 90) progressClass = 'danger';
+          else if (percentage >= 70) progressClass = 'warning';
+
+          budgetItem.innerHTML = `
+            <div class="budget-header">
+              <div class="budget-category">${category}</div>
+              <div class="budget-amounts">
+                <span class="spent">${spent.toFixed(2)}€</span> / ${limit.toFixed(2)}€
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+            </div>
+            <div class="card-main">
+              <div class="hint" style="margin-top: 8px;">
+                <span>${remaining >= 0 ? '✅' : '⚠️'}</span>
+                <span>${remaining >= 0 ? `Απομένουν ${remaining.toFixed(2)}€` : `Υπέρβαση κατά ${Math.abs(remaining).toFixed(2)}€`}</span>
+              </div>
+            </div>
+          `;
+
+          budgetsList.appendChild(budgetItem);
+        });
+      }
+
+      function renderInsights() {
+        insightsList.innerHTML = "";
+
+        const insights = [];
+
+        // Calculate stats
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthStr = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+
+        let currentMonthExpenses = 0;
+        let lastMonthExpenses = 0;
+        const categorySpending = {};
+
+        transactions.forEach(t => {
+          if (t.type === 'expense') {
+            if (t.date.startsWith(currentMonth)) {
+              currentMonthExpenses += t.amount;
+              categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+            }
+            if (t.date.startsWith(lastMonthStr)) {
+              lastMonthExpenses += t.amount;
+            }
+          }
+        });
+
+        // Month comparison
+        if (lastMonthExpenses > 0) {
+          const change = ((currentMonthExpenses - lastMonthExpenses) / lastMonthExpenses) * 100;
+          if (change < -10) {
+            insights.push({
+              type: 'success',
+              icon: '🎉',
+              title: 'Εξαιρετική Πρόοδος!',
+              text: `Τα έξοδά σου μειώθηκαν κατά ${Math.abs(change).toFixed(1)}% σε σχέση με τον προηγούμενο μήνα!`
+            });
+          } else if (change > 20) {
+            insights.push({
+              type: 'warning',
+              icon: '⚠️',
+              title: 'Αύξηση Εξόδων',
+              text: `Τα έξοδά σου αυξήθηκαν κατά ${change.toFixed(1)}% σε σχέση με τον προηγούμενο μήνα. Έλεγξε τις κατηγορίες σου.`
+            });
+          }
+        }
+
+        // Top spending category
+        if (Object.keys(categorySpending).length > 0) {
+          const topCategory = Object.entries(categorySpending).sort((a, b) => b[1] - a[1])[0];
+          const percentage = (topCategory[1] / currentMonthExpenses) * 100;
+          
+          insights.push({
+            type: 'info',
+            icon: '📊',
+            title: 'Κορυφαία Κατηγορία',
+            text: `Η κατηγορία "${topCategory[0]}" αντιπροσωπεύει το ${percentage.toFixed(0)}% των εξόδων σου (${topCategory[1].toFixed(2)}€).`
+          });
+        }
+
+        // Budget warnings
+        Object.entries(budgets).forEach(([category, limit]) => {
+          const spent = categorySpending[category] || 0;
+          const percentage = (spent / limit) * 100;
+          
+          if (percentage >= 90 && percentage < 100) {
+            insights.push({
+              type: 'warning',
+              icon: '🔔',
+              title: 'Προσοχή στον Προϋπολογισμό',
+              text: `Έχεις ξοδέψει το ${percentage.toFixed(0)}% του προϋπολογισμού σου για "${category}".`
+            });
+          } else if (percentage >= 100) {
+            insights.push({
+              type: 'warning',
+              icon: '🚨',
+              title: 'Υπέρβαση Προϋπολογισμού',
+              text: `Έχεις ξεπεράσει τον προϋπολογισμό σου για "${category}" κατά ${(spent - limit).toFixed(2)}€.`
+            });
+          }
+        });
+
+        // Savings rate insight
+        let totalIncome = 0;
+        let totalExpense = 0;
+        transactions.forEach(t => {
+          if (t.type === "income") totalIncome += t.amount;
+          else totalExpense += t.amount;
+        });
+        const savingsRateValue = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome * 100) : 0;
+
+        if (savingsRateValue >= 30) {
+          insights.push({
+            type: 'success',
+            icon: '💎',
+            title: 'Εξαιρετική Αποταμίευση!',
+            text: `Αποταμιεύεις το ${savingsRateValue.toFixed(0)}% των εσόδων σου! Συνέχισε έτσι!`
+          });
+        } else if (savingsRateValue < 10 && totalIncome > 0) {
+          insights.push({
+            type: 'warning',
+            icon: '💭',
+            title: 'Σκέψου την Αποταμίευση',
+            text: `Προσπάθησε να αποταμιεύεις τουλάχιστον 10-20% των εσόδων σου για το μέλλον.`
+          });
+        }
+
+        if (insights.length === 0) {
+          insights.push({
+            type: 'info',
+            icon: '📝',
+            title: 'Συνέχισε την Καταγραφή',
+            text: 'Πρόσθεσε περισσότερες κινήσεις για να δεις εξατομικευμένες αναλύσεις και συμβουλές!'
+          });
+        }
+
+        insights.forEach(insight => {
+          const card = document.createElement('div');
+          card.className = `insight-card ${insight.type}`;
+          card.innerHTML = `
+            <div class="insight-icon">${insight.icon}</div>
+            <div class="insight-content">
+              <h4>${insight.title}</h4>
+              <p>${insight.text}</p>
+            </div>
+          `;
+          insightsList.appendChild(card);
+        });
+
+        renderTrendsChart();
+      }
+
+      function renderAchievements() {
+        achievementsList.innerHTML = "";
+
+        ACHIEVEMENTS.forEach(achievement => {
+          const unlocked = achievement.check();
+          const div = document.createElement('div');
+          div.className = `achievement ${unlocked ? 'unlocked' : 'locked'}`;
+          div.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-title">${achievement.title}</div>
+            <div class="achievement-desc">${achievement.desc}</div>
+          `;
+          
+          if (unlocked) {
+            div.addEventListener('click', () => {
+              showToast(`🏆 ${achievement.title} - ${achievement.desc}`, 'success');
+            });
+          }
+          
+          achievementsList.appendChild(div);
+        });
+      }
+
+      function renderGoals() {
+        goalsList.innerHTML = "";
+
+        if (goals.length === 0) {
+          goalsList.innerHTML = `
+            <div class="empty-goals">
+              <div class="empty-goals-icon">🎯</div>
+              <h3>Δεν έχεις στόχους ακόμα</h3>
+              <p>Όρισε έναν στόχο αποταμίευσης για να ξεκινήσεις!</p>
+            </div>
+          `;
+          return;
+        }
+
+        goals.forEach(goal => {
+          const percentage = (goal.current / goal.target) * 100;
+          const remaining = goal.target - goal.current;
+          const isCompleted = goal.current >= goal.target;
+          
+          // Calculate days remaining
+          const today = new Date();
+          const deadline = new Date(goal.deadline);
+          const daysRemaining = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+          const isUrgent = daysRemaining <= 30 && daysRemaining > 0;
+
+          // Calculate monthly savings needed
+          const monthsRemaining = Math.max(1, daysRemaining / 30);
+          const monthlySavingsNeeded = remaining > 0 ? (remaining / monthsRemaining) : 0;
+
+          const goalCard = document.createElement('div');
+          goalCard.className = `goal-card ${isCompleted ? 'completed' : ''}`;
+          goalCard.innerHTML = `
+            <div class="goal-header">
+              <div class="goal-info">
+                <div class="goal-title-row">
+                  <span class="goal-icon-display">${goal.icon}</span>
+                  <div>
+                    <div class="goal-name">${goal.name}</div>
+                    <div class="goal-deadline ${isUrgent ? 'urgent' : ''}">
+                      <span>📅</span>
+                      <span>${daysRemaining > 0 ? `${daysRemaining} μέρες` : daysRemaining === 0 ? 'Σήμερα!' : 'Έληξε'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="goal-actions">
+                <button class="btn-icon-small edit" data-id="${goal.id}" title="Επεξεργασία">
+                  ✏️
+                </button>
+                <button class="btn-icon-small delete" data-id="${goal.id}" title="Διαγραφή">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <div class="goal-progress-section">
+              <div class="goal-amounts">
+                <span class="goal-current">${goal.current.toFixed(2)}€</span>
+                <span class="goal-percentage">${Math.min(percentage, 100).toFixed(0)}%</span>
+                <span class="goal-target">${goal.target.toFixed(2)}€</span>
+              </div>
+              <div class="goal-progress-bar">
+                <div class="goal-progress-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+              </div>
+            </div>
+
+            <div class="goal-stats">
+              <div class="goal-stat">
+                <div class="goal-stat-label">Απομένουν</div>
+                <div class="goal-stat-value ${remaining <= 0 ? 'amount-pos' : ''}">${remaining > 0 ? remaining.toFixed(0) : 0}€</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-label">Μηνιαία</div>
+                <div class="goal-stat-value">${monthlySavingsNeeded.toFixed(0)}€</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-label">Κατάσταση</div>
+                <div class="goal-stat-value">
+                  <span class="goal-badge ${isCompleted ? 'completed' : 'in-progress'}">
+                    ${isCompleted ? '✓ Επιτεύχθηκε!' : 'Σε εξέλιξη'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            ${!isCompleted ? `
+              <div class="goal-actions-bottom">
+                <button class="btn-contribute" data-id="${goal.id}">
+                  <span>💰</span>
+                  <span>Προσθήκη Ποσού</span>
+                </button>
+              </div>
+            ` : ''}
+          `;
+
+          goalsList.appendChild(goalCard);
+        });
+
+        // Add event listeners for goal actions
+        document.querySelectorAll('.btn-contribute').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const goalId = e.currentTarget.dataset.id;
+            contributeToGoal(goalId);
+          });
+        });
+
+        document.querySelectorAll('.goal-actions .edit').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const goalId = e.currentTarget.dataset.id;
+            editGoal(goalId);
+          });
+        });
+
+        document.querySelectorAll('.goal-actions .delete').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const goalId = e.currentTarget.dataset.id;
+            deleteGoal(goalId);
+          });
+        });
+      }
+
+      function contributeToGoal(goalId) {
+        const goal = goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        const remaining = goal.target - goal.current;
+        const amount = prompt(
+          `Πόσα θέλεις να προσθέσεις στο στόχο "${goal.name}"?\n\nΑπομένουν: ${remaining.toFixed(2)}€`,
+          Math.min(remaining, 50).toFixed(2)
+        );
+
+        if (amount === null) return;
+
+        const contribution = parseFloat(amount);
+        if (isNaN(contribution) || contribution <= 0) {
+          showToast("Μη έγκυρο ποσό.", "error");
+          return;
+        }
+
+        goal.current = Math.min(goal.current + contribution, goal.target);
+        saveGoals();
+        renderGoals();
+
+        if (goal.current >= goal.target) {
+          setTimeout(() => {
+            showToast(`🎉 Συγχαρητήρια! Έφτασες το στόχο σου: ${goal.name}!`, "success");
+          }, 300);
+        } else {
+          showToast(`Προστέθηκαν ${contribution.toFixed(2)}€ στο στόχο! 💰`, "success");
+        }
+      }
+
+      function editGoal(goalId) {
+        const goal = goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        editingGoalId = goalId;
+        goalModalTitle.textContent = "Επεξεργασία Στόχου";
+        goalNameInput.value = goal.name;
+        goalAmountInput.value = goal.target;
+        goalCurrentInput.value = goal.current;
+        goalDeadlineInput.value = goal.deadline;
+        goalIconInput.value = goal.icon;
+        goalModal.classList.add('active');
+      }
+
+      function deleteGoal(goalId) {
+        const goal = goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        if (!confirm(`Σίγουρα θέλεις να διαγράψεις το στόχο "${goal.name}";`)) return;
+
+        goals = goals.filter(g => g.id !== goalId);
+        saveGoals();
+        renderGoals();
+        showToast("Ο στόχος διαγράφηκε.", "success");
+      }
+
+      function renderCharts() {
+        renderExpenseChart();
+      }
+
+      function renderExpenseChart() {
+        const canvas = document.getElementById('expenseChart');
+        if (!canvas) return;
+
+        // Calculate category spending
+        const categorySpending = {};
+        transactions.forEach(t => {
+          if (t.type === 'expense') {
+            categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+          }
+        });
+
+        const labels = Object.keys(categorySpending);
+        const data = Object.values(categorySpending);
+
+        if (expenseChart) {
+          expenseChart.destroy();
+        }
+
+        const ctx = canvas.getContext('2d');
+        expenseChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: [
+                '#38bdf8', '#f97373', '#4ade80', '#fbbf24', '#a78bfa',
+                '#fb923c', '#ec4899', '#14b8a6', '#f472b6', '#facc15'
+              ],
+              borderColor: '#020617',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#e5e7eb',
+                  padding: 15,
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed || 0;
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = ((value / total) * 100).toFixed(1);
+                    return `${label}: ${value.toFixed(2)}€ (${percentage}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function renderTrendsChart() {
+        const canvas = document.getElementById('trendsChart');
+        if (!canvas) return;
+
+        // Get last 6 months
+        const monthlyData = {};
+        const now = new Date();
+        
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          monthlyData[key] = { income: 0, expense: 0 };
+        }
+
+        transactions.forEach(t => {
+          const month = t.date.substring(0, 7);
+          if (monthlyData[month]) {
+            if (t.type === 'income') {
+              monthlyData[month].income += t.amount;
+            } else {
+              monthlyData[month].expense += t.amount;
+            }
+          }
+        });
+
+        const labels = Object.keys(monthlyData).map(k => {
+          const [year, month] = k.split('-');
+          return new Date(year, month - 1).toLocaleDateString('el-GR', { month: 'short', year: '2-digit' });
+        });
+        const incomeData = Object.values(monthlyData).map(d => d.income);
+        const expenseData = Object.values(monthlyData).map(d => d.expense);
+
+        if (trendsChart) {
+          trendsChart.destroy();
+        }
+
+        const ctx = canvas.getContext('2d');
+        trendsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Έσοδα',
+                data: incomeData,
+                borderColor: '#4ade80',
+                backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Έξοδα',
+                data: expenseData,
+                borderColor: '#f97373',
+                backgroundColor: 'rgba(249, 115, 115, 0.1)',
+                tension: 0.4,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  color: '#e5e7eb',
+                  padding: 15,
+                  font: {
+                    size: 12
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: '#9ca3af',
+                  callback: function(value) {
+                    return value + '€';
+                  }
+                },
+                grid: {
+                  color: 'rgba(148, 163, 184, 0.1)'
+                }
+              },
+              x: {
+                ticks: {
+                  color: '#9ca3af'
+                },
+                grid: {
+                  color: 'rgba(148, 163, 184, 0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function render() {
+        updateSummary();
+        renderTable();
+        renderBudgets();
+        updateCategoryFilter();
+      }
+
+      // Event listeners
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const type = form.type.value === "expense" ? "expense" : "income";
+        const amount = parseFloat(amountInput.value);
+        const category = categoryInput.value || "Άλλο";
+        const date = dateInput.value;
+        const description = descriptionInput.value.trim();
+        const recurring = recurringInput.checked;
+
+        if (!date || isNaN(amount) || amount <= 0) {
+          showToast("Συμπλήρωσε σωστά το ποσό και την ημερομηνία.", "error");
+          return;
+        }
+
+        const transaction = {
+          id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+          type,
+          amount,
+          category,
+          date,
+          description,
+          recurring
+        };
+
+        transactions.unshift(transaction);
+        save();
+        render();
+        renderCharts();
+
+        form.reset();
+        document.getElementById("type-income").checked = true;
+        dateInput.valueAsNumber = Date.now() - new Date().getTimezoneOffset() * 60000;
+        
+        showToast("Η κίνηση προστέθηκε επιτυχώς! ✓", "success");
+      });
+
+      filterType.addEventListener("change", render);
+      filterCategory.addEventListener("change", render);
+
+      transactionsBody.addEventListener("click", function (e) {
+        const btn = e.target.closest("button.btn-icon");
+        if (!btn || !btn.dataset.id) return;
+        const id = btn.dataset.id;
+        if (!confirm("Σίγουρα θέλεις να διαγράψεις αυτή την εγγραφή;")) return;
+        
+        transactions = transactions.filter(t => t.id !== id);
+        save();
+        render();
+        renderCharts();
+        showToast("Η εγγραφή διαγράφηκε.", "success");
+      });
+
+      clearAllBtn.addEventListener("click", function () {
+        if (!transactions.length) return;
+        if (!confirm("Θες σίγουρα να διαγράψεις ΟΛΕΣ τις εγγραφές;")) return;
+        
+        transactions = [];
+        save();
+        render();
+        renderCharts();
+        showToast("Όλες οι εγγραφές διαγράφηκαν.", "success");
+      });
+
+      exportBtn.addEventListener("click", function () {
+        if (!transactions.length) {
+          showToast("Δεν υπάρχουν δεδομένα για εξαγωγή.", "error");
+          return;
+        }
+        
+        const header = ["id", "type", "amount", "category", "date", "description", "recurring"];
+        const rows = [header.join(",")];
+
+        transactions.forEach(t => {
+          const row = [
+            t.id,
+            t.type,
+            t.amount.toFixed(2),
+            `"${(t.category || "").replace(/"/g, '""')}"`,
+            t.date,
+            `"${(t.description || "").replace(/"/g, '""')}"`,
+            t.recurring || false
+          ];
+          rows.push(row.join(","));
+        });
+
+        const csvContent = rows.join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const timestamp = new Date().toISOString().split('T')[0];
+        a.download = `transactions_${timestamp}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showToast("Το αρχείο CSV εξήχθη επιτυχώς! 💾", "success");
+      });
+
+      importBtn.addEventListener("click", () => csvFileInput.click());
+
+      csvFileInput.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          try {
+            const csvText = event.target.result;
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) throw new Error('Κενό αρχείο');
+
+            const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+            const importedTransactions = [];
+
+            for (let i = 1; i < lines.length; i++) {
+              const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+              const t = {};
+              headers.forEach((h, idx) => t[h] = values[idx]);
+              
+              const amount = parseFloat(t.amount);
+              if (isNaN(amount)) continue;
+
+              importedTransactions.push({
+                id: t.id || Date.now().toString(36) + Math.random().toString(36).substr(2),
+                type: t.type,
+                amount: amount,
+                category: t.category || 'Άλλο',
+                date: t.date,
+                description: t.description || '',
+                recurring: t.recurring === 'true'
+              });
+            }
+
+            if (importedTransactions.length === 0) {
+              showToast("Δεν βρέθηκαν έγκυρες εγγραφές.", "error");
+              return;
+            }
+
+            const shouldReplace = confirm(
+              `Βρέθηκαν ${importedTransactions.length} εγγραφές.\n\n` +
+              `OK = Αντικατάσταση\nCancel = Προσθήκη`
+            );
+
+            if (shouldReplace) {
+              transactions = importedTransactions;
+            } else {
+              const existingIds = new Set(transactions.map(t => t.id));
+              importedTransactions.forEach(t => {
+                if (!existingIds.has(t.id)) transactions.push(t);
+              });
+            }
+
+            save();
+            render();
+            renderCharts();
+            showToast(`Εισήχθησαν ${importedTransactions.length} εγγραφές! ✓`, "success");
+          } catch (error) {
+            showToast(`Σφάλμα: ${error.message}`, "error");
+          } finally {
+            csvFileInput.value = '';
+          }
+        };
+
+        reader.readAsText(file, 'UTF-8');
+      });
+
+      // Budget modal
+      addBudgetBtn.addEventListener('click', () => {
+        budgetModal.classList.add('active');
+      });
+
+      closeBudgetModal.addEventListener('click', () => {
+        budgetModal.classList.remove('active');
+      });
+
+      budgetModal.addEventListener('click', (e) => {
+        if (e.target === budgetModal) {
+          budgetModal.classList.remove('active');
+        }
+      });
+
+      budgetForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const category = budgetCategoryInput.value;
+        const amount = parseFloat(budgetAmountInput.value);
+
+        if (amount <= 0) {
+          showToast("Το ποσό πρέπει να είναι θετικό.", "error");
+          return;
+        }
+
+        budgets[category] = amount;
+        saveBudgets();
+        renderBudgets();
+        budgetModal.classList.remove('active');
+        budgetForm.reset();
+        showToast(`Προϋπολογισμός για "${category}" ορίστηκε! 🎯`, "success");
+      });
+
+      // Goal modal events
+      addGoalBtn.addEventListener('click', () => {
+        editingGoalId = null;
+        goalModalTitle.textContent = "Νέος Στόχος Αποταμίευσης";
+        goalForm.reset();
+        goalModal.classList.add('active');
+      });
+
+      closeGoalModal.addEventListener('click', () => {
+        goalModal.classList.remove('active');
+        editingGoalId = null;
+      });
+
+      goalModal.addEventListener('click', (e) => {
+        if (e.target === goalModal) {
+          goalModal.classList.remove('active');
+          editingGoalId = null;
+        }
+      });
+
+      goalForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = goalNameInput.value.trim();
+        const target = parseFloat(goalAmountInput.value);
+        const current = parseFloat(goalCurrentInput.value);
+        const deadline = goalDeadlineInput.value;
+        const icon = goalIconInput.value;
+
+        if (!name || target <= 0 || current < 0) {
+          showToast("Συμπλήρωσε σωστά όλα τα πεδία.", "error");
+          return;
+        }
+
+        if (current > target) {
+          showToast("Το τρέχον ποσό δεν μπορεί να είναι μεγαλύτερο από το στόχο.", "error");
+          return;
+        }
+
+        const deadlineDate = new Date(deadline);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (deadlineDate < today) {
+          if (!confirm("Η ημερομηνία στόχου είναι στο παρελθόν. Θέλεις να συνεχίσεις;")) {
+            return;
+          }
+        }
+
+        if (editingGoalId) {
+          // Edit existing goal
+          const goal = goals.find(g => g.id === editingGoalId);
+          if (goal) {
+            goal.name = name;
+            goal.target = target;
+            goal.current = current;
+            goal.deadline = deadline;
+            goal.icon = icon;
+            showToast("Ο στόχος ενημερώθηκε! ✓", "success");
+          }
+          editingGoalId = null;
+        } else {
+          // Create new goal
+          const goal = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            name,
+            target,
+            current,
+            deadline,
+            icon,
+            createdAt: new Date().toISOString()
+          };
+          goals.push(goal);
+          showToast(`Στόχος "${name}" δημιουργήθηκε! 🎯`, "success");
+        }
+
+        saveGoals();
+        renderGoals();
+        goalModal.classList.remove('active');
+        goalForm.reset();
+      });
+
+      // Welcome modal events
+      langBtn.addEventListener('click', () => {
+        currentLang = currentLang === 'el' ? 'en' : 'el';
+        updateLanguage();
+        showToast(currentLang === 'el' ? '🇬🇷 Ελληνικά' : '🇬🇧 English', 'success');
+      });
+
+      helpBtn.addEventListener('click', () => {
+        welcomeModal.style.display = 'flex';
+        dontShowAgain.checked = false;
+      });
+
+      closeWelcomeModal.addEventListener('click', () => {
+        welcomeModal.style.display = 'none';
+        if (dontShowAgain.checked) {
+          localStorage.setItem(WELCOME_KEY, 'true');
+        }
+      });
+
+      startUsingApp.addEventListener('click', () => {
+        welcomeModal.style.display = 'none';
+        if (dontShowAgain.checked) {
+          localStorage.setItem(WELCOME_KEY, 'true');
+        }
+      });
+
+      welcomeModal.addEventListener('click', (e) => {
+        if (e.target === welcomeModal) {
+          welcomeModal.style.display = 'none';
+          if (dontShowAgain.checked) {
+            localStorage.setItem(WELCOME_KEY, 'true');
+          }
+        }
+      });
+
+      init();
+    })();
+  </script>
+</body>
+</html>
