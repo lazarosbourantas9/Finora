@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finora Business - Διαχείριση οικονομικών επιχείρησης.</title>
+  <link rel="icon" type="image/png" href="Finora.webp">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+  <style>
+    :root {
+      --bg: #0d1527;
+      --bg-soft: #111927;
+      --bg-softer: #030712;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.18);
+      --accent-strong: #0ea5e9;
+      --danger: #f87171;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --text: #e6e9ef;
+      --text-muted: #9ca7b8;
+      --border: #1e2838;
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --shadow-soft: 0 18px 45px rgba(14, 20, 34, 0.7);
+      --shadow-chip: 0 8px 20px rgba(14, 20, 34, 0.7);
+      --transition-fast: 0.18s ease-out;
+      --transition-medium: 0.3s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #1d2437 0, #020617 45%, #000 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 16px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 16px 12px; }
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1400px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      border-radius: 26px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.13);
+      padding: 24px 22px 20px;
+      backdrop-filter: blur(22px);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @media (max-width: 600px) {
+      .app {
+        border-radius: 20px;
+        padding: 18px 16px;
+      }
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      animation: slideIn 0.5s ease-out;
+      flex-wrap: wrap;
+    }
+
+    .title-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-pill {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-chip);
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--transition-fast);
+    }
+    
+    .logo-pill img {
+  width: 96%;
+  height: 96%;
+  margin-left: 3%;
+  object-fit: contain;
+}
+
+    .logo-pill:hover {
+      transform: rotate(5deg) scale(1.05);
+    }
+
+    .title-text h1 {
+      font-size: 1.35rem;
+      margin: 0 0 4px;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+      .title-text h1 { font-size: 1.1rem; }
+    }
+
+    .title-text h1 span.chip {
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      padding: 2px 10px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #000;
+      font-weight: 700;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .title-text p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(15, 23, 42, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      backdrop-filter: blur(14px);
+      transition: all var(--transition-fast);
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #4ade80;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.21);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(15, 23, 42, 1);
+      border-color: rgba(148, 163, 184, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.8);
+      color: var(--text);
+    }
+
+    #csvFileInput {
+      display: none;
+    }
+
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      overflow-x: auto;
+    }
+
+    .tab-nav button {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+
+    @media (max-width: 600px) {
+      .tab-nav button {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        min-width: 80px;
+      }
+    }
+
+    .tab-nav button:hover {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .tab-nav button.active {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-weight: 600;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    @media (min-width: 1200px) {
+      .layout.two-column {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+    }
+
+    .card {
+      background: linear-gradient(155deg, #020617, #020617);
+      border-radius: var(--radius-xl);
+      padding: 14px 16px;
+      border: 1px solid rgba(30, 64, 175, 0.35);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.9);
+      position: relative;
+      overflow: hidden;
+      transition: all var(--transition-medium);
+      animation: scaleIn 0.4s ease-out backwards;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 40px rgba(15, 23, 42, 0.95);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.065), transparent 60%),
+        radial-gradient(circle at 100% 0, rgba(30, 64, 175, 0.085), transparent 60%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+    }
+
+    .badge-soft {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text-muted);
+    }
+
+    .card-main .value {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      transition: transform var(--transition-fast);
+    }
+
+    .card:hover .card-main .value {
+      transform: scale(1.05);
+    }
+
+    .card-main .value span.currency {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .card-main .hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .amount-pos {
+      color: #4ade80 !important;
+    }
+
+    .amount-neg {
+      color: #f97373 !important;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      border-radius: 999px;
+      transition: width 0.5s ease-out;
+      position: relative;
+    }
+
+    .progress-fill.warning {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    }
+
+    .progress-fill.danger {
+      background: linear-gradient(90deg, #f97373, #dc2626);
+    }
+
+    .section {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      animation: slideIn 0.5s ease-out backwards;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title span.emoji {
+      font-size: 1.3rem;
+    }
+
+    .type-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .type-toggle label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all var(--transition-fast);
+      user-select: none;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+    }
+
+    .type-toggle input[type="radio"],
+    .type-toggle input[type="checkbox"] {
+      display: none;
+    }
+
+    .type-toggle input[type="radio"]:checked + label {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-weight: 600;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+      transform: scale(1.02);
+    }
+
+    .type-toggle input[type="checkbox"]:checked + label {
+      background: rgba(74, 222, 128, 0.2);
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      animation: fadeIn 0.4s ease-out backwards;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+      font-family: inherit;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .insight-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.05));
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .insight-card.warning {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .insight-card.success {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(34, 197, 94, 0.05));
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    .insight-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .insight-content h4 {
+      margin: 0 0 4px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .insight-content p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .chart-container {
+        height: 250px;
+      }
+    }
+
+    .budget-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .budget-category {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .budget-amounts {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .budget-amounts .spent {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .goal-card {
+      background: linear-gradient(155deg, #020617, #0a0f1e);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all var(--transition-medium);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .goal-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+    }
+
+    .goal-card.completed::before {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      animation: shimmer 2s infinite;
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .goal-info {
+      flex: 1;
+    }
+
+    .goal-icon-display {
+      font-size: 2.5rem;
+      margin-right: 12px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .goal-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .goal-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .goal-badge {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .goal-badge.in-progress {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .goal-badge.completed {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .goal-deadline {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .goal-progress-section {
+      margin-bottom: 16px;
+    }
+
+    .goal-amounts {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+
+    .goal-current {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--success);
+    }
+
+    .goal-target {
+      color: var(--text-muted);
+    }
+
+    .goal-percentage {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .goal-progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .goal-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      border-radius: 999px;
+      transition: width 0.5s ease-out;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(74, 222, 128, 0.4);
+    }
+
+    .goal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .goal-stat {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .goal-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .goal-stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .goal-actions-bottom {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-contribute {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .btn-contribute:hover {
+      background: rgba(74, 222, 128, 0.25);
+      border-color: var(--success);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(74, 222, 128, 0.3);
+    }
+
+    .empty-goals {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-goals-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.4);
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideInUp 0.3s ease-out;
+      display: none;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar select {
+      flex: 1;
+      min-width: 150px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      outline: none;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      background: rgba(15, 23, 42, 0.5);
+      margin-bottom: 16px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+      transition: all var(--transition-fast);
+      animation: fadeIn 0.3s ease-out backwards;
+    }
+
+    tbody tr:hover {
+      background: rgba(56, 189, 248, 0.05);
+      transform: scale(1.01);
+    }
+
+    tbody td {
+      padding: 12px;
+      font-size: 0.85rem;
+    }
+
+    .date-cell {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .amount-cell {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chip-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .chip-income {
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+
+    .chip-expense {
+      background: rgba(249, 115, 115, 0.15);
+      color: #f97373;
+      border: 1px solid rgba(249, 115, 115, 0.3);
+    }
+
+    .chip-recurring {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      margin-left: 4px;
+    }
+
+    .chip-type .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .btn-icon {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(249, 115, 115, 0.3);
+      background: rgba(249, 115, 115, 0.1);
+      color: var(--danger);
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-icon:hover {
+      background: rgba(249, 115, 115, 0.2);
+      border-color: var(--danger);
+      transform: translateY(-1px);
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: none;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-actions button {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .btn-danger {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(249, 115, 115, 0.4);
+      background: rgba(249, 115, 115, 0.15);
+      color: var(--danger);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .btn-danger:hover {
+      background: rgba(249, 115, 115, 0.25);
+      border-color: var(--danger);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(249, 115, 115, 0.3);
+    }
+
+    .btn-success {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      font-family: inherit;
+    }
+
+    .btn-success:hover {
+      background: rgba(74, 222, 128, 0.25);
+      border-color: var(--success);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(74, 222, 128, 0.3);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      padding: 20px;
+      overflow-y: auto;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.95));
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      animation: scaleIn 0.3s ease-out;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: rgba(249, 115, 115, 0.15);
+      border: 1px solid rgba(249, 115, 115, 0.3);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--danger);
+      font-size: 1.2rem;
+      transition: all var(--transition-fast);
+    }
+
+    .modal-close:hover {
+      background: rgba(249, 115, 115, 0.25);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="title-block">
+        <div class="logo-pill">
+        <img src="Finora.webp" alt="">
+        </div>
+        <div class="title-text">
+          <h1>
+            Finora Business
+            <span class="chip">BUSINESS</span>
+          </h1>
+          <p>Διαχείριση των οικονομικών της επιχείρησής σου με καθαρότητα. Έξυπνη παρακολούθηση & ανάλυση.</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span>Live</span>
+        </div>
+        <button class="btn-ghost" id="langBtn">
+          🌐 <span id="currentLang">EL</span>
+        </button>
+        <button class="btn-ghost" id="helpBtn">
+          ❓ <span>Βοήθεια</span>
+        </button>
+        <button class="btn-ghost" id="importBtn">
+          📂 <span>Άνοιγμα CSV</span>
+        </button>
+        <input type="file" id="csvFileInput" accept=".csv" />
+      </div>
+    </header>
+
+    <div class="tab-nav">
+      <button class="active" data-tab="overview">📊 <span>Επισκόπηση</span></button>
+      <button data-tab="transactions">📋 <span>Κινήσεις</span></button>
+      <button data-tab="budgets">🎯 <span>Προϋπολογισμοί</span></button>
+      <button data-tab="insights">💡 <span>Ανάλυση</span></button>
+      <button data-tab="goals">🎯 <span>Στόχοι</span></button>
+    </div>
+
+    <!-- Overview -->
+    <div class="tab-content active" id="overview">
+      <div class="layout two-column">
+        <section class="section">
+          <h2 class="section-title"><span class="emoji">✍️</span> Νέα Κίνηση</h2>
+          <form id="transaction-form">
+            <div class="type-toggle">
+              <input type="radio" name="type" value="income" id="type-income" checked>
+              <label for="type-income">📈 <span>Έσοδο</span></label>
+              <input type="radio" name="type" value="expense" id="type-expense">
+              <label for="type-expense">📉 <span>Έξοδο</span></label>
+            </div>
+
+            <div class="form-group">
+              <label for="amount">Ποσό (€)</label>
+              <input type="number" id="amount" step="0.01" min="0" placeholder="π.χ. 150.50" required />
+            </div>
+
+            <div class="form-group">
+              <label for="category">Κατηγορία</label>
+              <select id="category"></select>
+            </div>
+
+            <div class="form-group">
+              <label for="date">Ημερομηνία</label>
+              <input type="date" id="date" required />
+            </div>
+
+            <div class="form-group">
+              <label for="description">Περιγραφή (προαιρετικό)</label>
+              <input type="text" id="description" placeholder="π.χ. Αγορά πρώτων υλών" />
+            </div>
+
+            <div class="type-toggle">
+              <input type="checkbox" id="recurring">
+              <label for="recurring">🔄 <span>Επαναλαμβανόμενη (μηνιαία)</span></label>
+            </div>
+
+            <button type="submit" class="btn-primary">➕ <span>Προσθήκη Κίνησης</span></button>
+          </form>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span class="emoji">💰</span> Οικονομική Κατάσταση</h2>
+          <div class="summary-grid">
+            <div class="card">
+              <div class="card-header"><span class="card-title">Ισοζύγιο</span></div>
+              <div class="card-main">
+                <div class="value" id="balanceValue">
+                  <span>0.00</span><span class="currency">EUR</span>
+                </div>
+                <div class="hint" id="balanceTrend">📊 <span>Ξεκίνα να καταγράφεις</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Έσοδα</span><span class="badge-soft">+</span>
+              </div>
+              <div class="card-main">
+                <div class="value amount-pos" id="incomeValue">
+                  <span>0.00</span><span class="currency">EUR</span>
+                </div>
+                <div class="hint">💰 <span>Συνολικά</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Έξοδα</span><span class="badge-soft">−</span>
+              </div>
+              <div class="card-main">
+                <div class="value amount-neg" id="expenseValue">
+                  <span>0.00</span><span class="currency">EUR</span>
+                </div>
+                <div class="hint">💸 <span>Συνολικά</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Ποσοστό Αποταμίευσης</span></div>
+              <div class="card-main">
+                <div class="value" id="savingsRate">
+                  <span>0</span><span class="currency">%</span>
+                </div>
+                <div class="hint">🎯 <span>Στόχος: 20%</span></div>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="section-title" style="margin-top: 20px;">
+            <span class="emoji">📈</span> Κατανομή Εξόδων
+          </h3>
+          <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="tab-content" id="transactions">
+      <section class="section">
+        <h2 class="section-title"><span class="emoji">📋</span> Ιστορικό Κινήσεων</h2>
+        <div class="filter-bar">
+          <select id="filterType">
+            <option value="all">Όλες οι κινήσεις</option>
+            <option value="income">Μόνο έσοδα</option>
+            <option value="expense">Μόνο έξοδα</option>
+          </select>
+          <select id="filterCategory">
+            <option value="all">Όλες οι κατηγορίες</option>
+          </select>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Ημερομηνία</th>
+                <th>Περιγραφή</th>
+                <th>Κατηγορία</th>
+                <th>Τύπος</th>
+                <th>Ποσό</th>
+                <th>Ενέργειες</th>
+              </tr>
+            </thead>
+            <tbody id="transactionsBody"></tbody>
+          </table>
+          <div class="empty-state" id="emptyState">
+            Δεν υπάρχουν ακόμη καταχωρήσεις. Πρόσθεσε την πρώτη σου κίνηση! ✨
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button class="btn-danger" id="clearAllBtn">🗑️ <span>Διαγραφή Όλων</span></button>
+          <button class="btn-success" id="exportBtn">💾 <span>Εξαγωγή CSV</span></button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Budgets -->
+    <div class="tab-content" id="budgets">
+      <section class="section">
+        <h2 class="section-title"><span class="emoji">🎯</span> Μηνιαίοι Προϋπολογισμοί</h2>
+        <button class="btn-primary" id="addBudgetBtn" style="margin-bottom: 20px;">➕ <span>Προσθήκη Προϋπολογισμού</span></button>
+        <div id="budgetsList"></div>
+      </section>
+    </div>
+
+    <!-- Insights -->
+    <div class="tab-content" id="insights">
+      <section class="section">
+        <h2 class="section-title"><span class="emoji">💡</span> Έξυπνες Αναλύσεις</h2>
+        <div id="insightsList"></div>
+        <h3 class="section-title" style="margin-top: 24px;">
+          <span class="emoji">📊</span> Μηνιαία Σύγκριση
+        </h3>
+        <div class="chart-container">
+          <canvas id="trendsChart"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <!-- Goals -->
+    <div class="tab-content" id="goals">
+      <section class="section">
+        <h2 class="section-title"><span class="emoji">🎯</span> Στόχοι Αποταμίευσης</h2>
+        <button class="btn-primary" id="addGoalBtn" style="margin-bottom: 20px;">➕ <span>Νέος Στόχος</span></button>
+        <div id="goalsList"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Budget Modal -->
+  <div class="modal" id="budgetModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">🎯 <span>Νέος Προϋπολογισμός</span></h3>
+        <button class="modal-close" id="closeBudgetModal">✕</button>
+      </div>
+      <form id="budgetForm">
+        <div class="form-group">
+          <label for="budgetCategory">Κατηγορία</label>
+          <select id="budgetCategory" required>
+            <option value="Αγορές εμπορευμάτων">Αγορές εμπορευμάτων</option>
+            <option value="Μεταφορικά / Courier">Μεταφορικά / Courier</option>
+            <option value="Διαφήμιση / Marketing">Διαφήμιση / Marketing</option>
+            <option value="Μισθοδοσία">Μισθοδοσία</option>
+            <option value="Εκπαίδευση">Εκπαίδευση</option>
+            <option value="Λογαριασμοί (ΔΕΗ / Νερό / Internet)">Λογαριασμοί (ΔΕΗ / Νερό / Internet)</option>
+            <option value="Ενοίκιο επαγγελματικού χώρου">Ενοίκιο επαγγελματικού χώρου</option>
+            <option value="Άλλο">Άλλο</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="budgetAmount">Μηνιαίο Όριο (€)</label>
+          <input type="number" id="budgetAmount" step="0.01" min="0" required />
+        </div>
+        <button type="submit" class="btn-primary">💾 <span>Αποθήκευση</span></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Goal Modal -->
+  <div class="modal" id="goalModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">🎯 <span id="goalModalTitle">Νέος Στόχος Αποταμίευσης</span></h3>
+        <button class="modal-close" id="closeGoalModal">✕</button>
+      </div>
+      <form id="goalForm">
+        <div class="form-group">
+          <label for="goalName">Όνομα Στόχου</label>
+          <input type="text" id="goalName" placeholder="π.χ. Νέος εξοπλισμός" required />
+        </div>
+        <div class="form-group">
+          <label for="goalAmount">Ποσό Στόχου (€)</label>
+          <input type="number" id="goalAmount" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+          <label for="goalCurrent">Τρέχον Ποσό (€)</label>
+          <input type="number" id="goalCurrent" step="0.01" min="0" value="0" required />
+        </div>
+        <div class="form-group">
+          <label for="goalDeadline">Ημερομηνία Στόχου</label>
+          <input type="date" id="goalDeadline" required />
+        </div>
+        <div class="form-group">
+          <label for="goalIcon">Εικονίδιο (προαιρετικό)</label>
+          <select id="goalIcon">
+            <option value="🏖️">🏖️ Διακοπές</option>
+            <option value="🏠">🏠 Σπίτι</option>
+            <option value="🚗">🚗 Όχημα</option>
+            <option value="💻">💻 Εξοπλισμός</option>
+            <option value="💰">💰 Αποθεματικό</option>
+            <option value="🎯">🎯 Άλλο</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary">💾 <span>Αποθήκευση Στόχου</span></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* Κατηγορίες ανά τύπο */
+    const incomeCategories = [
+      "Πώληση προϊόντων",
+      "Παροχή υπηρεσιών",
+      "Είσπραξη τιμολογίων",
+      "Καταθέσεις πελατών",
+      "Έσοδα από συνεργασίες",
+      "Λοιπά έσοδα"
+    ];
+
+    const expenseCategories = [
+      "Αγορές εμπορευμάτων",
+      "Πρώτες ύλες",
+      "Μεταφορικά / Courier",
+      "Διαφήμιση / Marketing",
+      "Ενοίκιο επαγγελματικού χώρου",
+      "Μισθοδοσία",
+      "Λογαριασμοί (ΔΕΗ / Νερό / Internet)",
+      "Εξοπλισμός",
+      "Συντήρηση",
+      "Λογιστικά / Φορολογικά",
+      "Λοιπά έξοδα"
+    ];
+
+    function updateCategoryOptions(type) {
+      const categorySelect = document.getElementById("category");
+      if (!categorySelect) return;
+      categorySelect.innerHTML = "";
+      const list = type === "income" ? incomeCategories : expenseCategories;
+      list.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        categorySelect.appendChild(opt);
+      });
+    }
+
+    let transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
+    let budgets = JSON.parse(localStorage.getItem("budgets") || "[]");
+    let goals = JSON.parse(localStorage.getItem("goals") || "[]");
+
+    function saveData() {
+      localStorage.setItem("transactions", JSON.stringify(transactions));
+      localStorage.setItem("budgets", JSON.stringify(budgets));
+      localStorage.setItem("goals", JSON.stringify(goals));
+    }
+
+    function showToast(message, type = "success") {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.className = "toast " + type;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 2800);
+    }
+
+    /* Tabs */
+    document.querySelectorAll(".tab-nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-nav button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tabId = btn.dataset.tab;
+        document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
+
+        if (tabId === "overview") {
+          const type = document.querySelector("input[name='type']:checked").value;
+          updateCategoryOptions(type);
+        }
+        if (tabId === "transactions") {
+          renderTransactions();
+        }
+      });
+    });
+
+    /* Εναλλαγή τύπου */
+    document.getElementById("type-income").addEventListener("change", () => {
+      updateCategoryOptions("income");
+    });
+    document.getElementById("type-expense").addEventListener("change", () => {
+      updateCategoryOptions("expense");
+    });
+
+    /* Φόρμα κινήσεων */
+    document.getElementById("transaction-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const type = document.querySelector("input[name='type']:checked").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const category = document.getElementById("category").value;
+      const date = document.getElementById("date").value;
+      const description = document.getElementById("description").value;
+      const recurring = document.getElementById("recurring").checked;
+
+      if (!amount || !date) {
+        showToast("Συμπλήρωσε σωστά τα απαιτούμενα πεδία.", "error");
+        return;
+      }
+
+      const tx = {
+        id: Date.now(),
+        type,
+        amount,
+        category,
+        date,
+        description,
+        recurring
+      };
+
+      transactions.push(tx);
+      saveData();
+
+      this.reset();
+      // default ξαναπάει σε Έσοδο
+      document.getElementById("type-income").checked = true;
+      updateCategoryOptions("income");
+
+      showToast("Η κίνηση προστέθηκε!", "success");
+      renderTransactions();
+      updateOverview();
+      updateInsights();
+      updateCharts();
+      renderBudgets();
+    });
+
+    /* Πίνακας κινήσεων */
+    function renderTransactions() {
+      const tbody = document.getElementById("transactionsBody");
+      const emptyState = document.getElementById("emptyState");
+      tbody.innerHTML = "";
+
+      const filterType = document.getElementById("filterType").value;
+      const filterCategory = document.getElementById("filterCategory").value;
+
+      let filtered = [...transactions];
+
+      if (filterType !== "all") {
+        filtered = filtered.filter(t => t.type === filterType);
+      }
+      if (filterCategory !== "all") {
+        filtered = filtered.filter(t => t.category === filterCategory);
+      }
+
+      if (filtered.length === 0) {
+        emptyState.style.display = "block";
+        return;
+      }
+      emptyState.style.display = "none";
+
+      filtered.sort((a, b) => (a.date > b.date ? -1 : 1));
+
+      filtered.forEach(tx => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="date-cell">${tx.date}</td>
+          <td>${tx.description || "-"}</td>
+          <td>${tx.category}</td>
+          <td>
+            <span class="chip-type ${tx.type === "income" ? "chip-income" : "chip-expense"}">
+              <span class="dot"></span>
+              ${tx.type === "income" ? "Έσοδο" : "Έξοδο"}
+            </span>
+            ${tx.recurring ? '<span class="chip-recurring">🔄</span>' : ""}
+          </td>
+          <td class="amount-cell ${tx.type === "income" ? "amount-pos" : "amount-neg"}">
+            ${tx.type === "income" ? "+" : "-"}${tx.amount.toFixed(2)}€
+          </td>
+          <td>
+            <button class="btn-icon" onclick="deleteTransaction(${tx.id})">🗑️ Διαγραφή</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      populateFilterCategories();
+    }
+
+    function deleteTransaction(id) {
+      transactions = transactions.filter(t => t.id !== id);
+      saveData();
+      showToast("Η κίνηση διαγράφηκε", "success");
+      renderTransactions();
+      updateOverview();
+      updateInsights();
+      updateCharts();
+      renderBudgets();
+    }
+
+    window.deleteTransaction = deleteTransaction;
+
+    function populateFilterCategories() {
+      const select = document.getElementById("filterCategory");
+      const categories = [...new Set(transactions.map(t => t.category))];
+      select.innerHTML = '<option value="all">Όλες οι κατηγορίες</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById("filterType").addEventListener("change", renderTransactions);
+    document.getElementById("filterCategory").addEventListener("change", renderTransactions);
+
+    /* Σύνοψη */
+    function updateOverview() {
+      const income = transactions.filter(t => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0);
+      const expense = transactions.filter(t => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0);
+      const balance = income - expense;
+
+      document.querySelector("#incomeValue span").textContent = income.toFixed(2);
+      document.querySelector("#expenseValue span").textContent = expense.toFixed(2);
+
+      const balElem = document.querySelector("#balanceValue span");
+      balElem.textContent = balance.toFixed(2);
+      balElem.className = "";
+      if (balance > 0) balElem.classList.add("amount-pos");
+      if (balance < 0) balElem.classList.add("amount-neg");
+
+      const rate = income === 0 ? 0 : ((income - expense) / income) * 100;
+      document.querySelector("#savingsRate span").textContent = rate.toFixed(0);
+
+      const trend = document.getElementById("balanceTrend");
+      if (transactions.length === 0) {
+        trend.innerHTML = "📊 <span>Ξεκίνα να καταγράφεις</span>";
+      } else if (balance > 0) {
+        trend.innerHTML = "📈 <span>Θετικό ισοζύγιο</span>";
+      } else if (balance < 0) {
+        trend.innerHTML = "📉 <span>Αρνητικό ισοζύγιο</span>";
+      } else {
+        trend.innerHTML = "⚖️ <span>Μηδενικό ισοζύγιο</span>";
+      }
+    }
+
+    /* Insights */
+    function updateInsights() {
+      const container = document.getElementById("insightsList");
+      container.innerHTML = "";
+
+      if (transactions.length === 0) {
+        container.innerHTML = `
+          <div class="insight-card">
+            <span class="insight-icon">📘</span>
+            <div class="insight-content">
+              <h4>Δεν υπάρχουν δεδομένα ακόμη</h4>
+              <p>Πρόσθεσε μερικές κινήσεις για να ξεκινήσουν οι αναλύσεις.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const income = transactions.filter(t => t.type === "income")
+        .reduce((a, b) => a + b.amount, 0);
+      const expense = transactions.filter(t => t.type === "expense")
+        .reduce((a, b) => a + b.amount, 0);
+
+      if (expense > income) {
+        container.innerHTML += `
+          <div class="insight-card warning">
+            <span class="insight-icon">⚠️</span>
+            <div class="insight-content">
+              <h4>Τα έξοδα είναι υψηλότερα από τα έσοδα</h4>
+              <p>Ίσως χρειάζεται καλύτερος έλεγχος των λειτουργικών δαπανών.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML += `
+          <div class="insight-card success">
+            <span class="insight-icon">✅</span>
+            <div class="insight-content">
+              <h4>Οι οικονομικοί δείκτες είναι θετικοί</h4>
+              <p>Τα έσοδα υπερβαίνουν τα έξοδα. Συνέχισε έτσι!</p>
+            </div>
+          </div>
+        `;
+      }
+
+      const expenses = transactions.filter(t => t.type === "expense");
+      if (expenses.length > 0) {
+        const freq = {};
+        expenses.forEach(e => {
+          freq[e.category] = (freq[e.category] || 0) + e.amount;
+        });
+        const topCat = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
+        container.innerHTML += `
+          <div class="insight-card">
+            <span class="insight-icon">📌</span>
+            <div class="insight-content">
+              <h4>Κύρια κατηγορία εξόδων</h4>
+              <p>Ξοδεύεις περισσότερα στην κατηγορία: <b>${topCat[0]}</b>.</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    /* Charts */
+    let expenseChart;
+    let trendsChart;
+
+    function updateCharts() {
+      renderExpenseChart();
+      renderTrendsChart();
+    }
+
+    function renderExpenseChart() {
+      const ctx = document.getElementById("expenseChart");
+      const expenseData = transactions.filter(t => t.type === "expense");
+      const categoryTotals = {};
+      expenseData.forEach(e => {
+        categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
+      });
+      const labels = Object.keys(categoryTotals);
+      const data = Object.values(categoryTotals);
+
+      if (expenseChart) expenseChart.destroy();
+      expenseChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels,
+          datasets: [{ data, borderWidth: 1 }]
+        }
+      });
+    }
+
+    function renderTrendsChart() {
+      const ctx = document.getElementById("trendsChart");
+      const monthlyIncome = {};
+      const monthlyExpense = {};
+
+      transactions.forEach(t => {
+        if (!t.date) return;
+        const month = t.date.slice(0, 7); // YYYY-MM
+        if (!monthlyIncome[month]) monthlyIncome[month] = 0;
+        if (!monthlyExpense[month]) monthlyExpense[month] = 0;
+        if (t.type === "income") monthlyIncome[month] += t.amount;
+        else monthlyExpense[month] += t.amount;
+      });
+
+      const labels = [...new Set([...Object.keys(monthlyIncome), ...Object.keys(monthlyExpense)])].sort();
+      const incomeData = labels.map(m => monthlyIncome[m] || 0);
+      const expenseData = labels.map(m => monthlyExpense[m] || 0);
+
+      if (trendsChart) trendsChart.destroy();
+      trendsChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: "Έσοδα", data: incomeData, borderWidth: 2 },
+            { label: "Έξοδα", data: expenseData, borderWidth: 2 }
+          ]
+        }
+      });
+    }
+
+    /* Budgets */
+    function renderBudgets() {
+      const list = document.getElementById("budgetsList");
+      list.innerHTML = "";
+
+      if (budgets.length === 0) {
+        list.innerHTML = "<p style='color:var(--text-muted);'>Δεν έχουν οριστεί προϋπολογισμοί.</p>";
+        return;
+      }
+
+      budgets.forEach(b => {
+        const spent = transactions
+          .filter(t => t.type === "expense" && t.category === b.category)
+          .reduce((s, t) => s + t.amount, 0);
+
+        const percent = b.amount === 0 ? 0 : Math.min((spent / b.amount) * 100, 100);
+        const div = document.createElement("div");
+        div.className = "budget-item";
+        div.innerHTML = `
+          <div class="budget-header">
+            <div class="budget-category">${b.category}</div>
+            <button class="btn-icon" onclick="deleteBudget(${b.id})">🗑️</button>
+          </div>
+          <div class="budget-amounts">
+            <span class="spent">${spent.toFixed(2)}€</span> / ${b.amount.toFixed(2)}€
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill ${
+              percent > 90 ? "danger" : percent > 70 ? "warning" : ""
+            }" style="width:${percent}%;"></div>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function deleteBudget(id) {
+      budgets = budgets.filter(b => b.id !== id);
+      saveData();
+      renderBudgets();
+      showToast("Ο προϋπολογισμός διαγράφηκε", "success");
+    }
+
+    window.deleteBudget = deleteBudget;
+
+    document.getElementById("addBudgetBtn").addEventListener("click", () => {
+      document.getElementById("budgetModal").classList.add("active");
+    });
+    document.getElementById("closeBudgetModal").addEventListener("click", () => {
+      document.getElementById("budgetModal").classList.remove("active");
+    });
+
+    document.getElementById("budgetForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const category = document.getElementById("budgetCategory").value;
+      const amount = parseFloat(document.getElementById("budgetAmount").value);
+      budgets.push({ id: Date.now(), category, amount });
+      saveData();
+      document.getElementById("budgetModal").classList.remove("active");
+      showToast("Ο προϋπολογισμός προστέθηκε!", "success");
+      this.reset();
+      renderBudgets();
+    });
+
+    /* Goals */
+    function renderGoals() {
+      const container = document.getElementById("goalsList");
+      container.innerHTML = "";
+      if (goals.length === 0) {
+        container.innerHTML = `
+          <div class="empty-goals">
+            <div class="empty-goals-icon">🎯</div>
+            <h3>Δεν υπάρχουν στόχοι ακόμη</h3>
+            <p>Πρόσθεσε έναν νέο στόχο αποταμίευσης για να ξεκινήσεις.</p>
+          </div>
+        `;
+        return;
+      }
+
+      goals.forEach(goal => {
+        const percent = goal.amount === 0 ? 0 : Math.min((goal.current / goal.amount) * 100, 100);
+        const completed = percent >= 100;
+        const card = document.createElement("div");
+        card.className = "goal-card" + (completed ? " completed" : "");
+        card.innerHTML = `
+          <div class="goal-header">
+            <div class="goal-info">
+              <div class="goal-title-row">
+                <div class="goal-icon-display">${goal.icon || "🎯"}</div>
+                <div>
+                  <div class="goal-name">${goal.name}</div>
+                  <div class="goal-deadline">
+                    📅 Μέχρι: ${goal.deadline || "-"}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="goal-actions">
+              <button class="btn-icon" onclick="deleteGoal(${goal.id})">🗑️</button>
+            </div>
+          </div>
+          <div class="goal-progress-section">
+            <div class="goal-amounts">
+              <span class="goal-current">${goal.current.toFixed(2)}€</span>
+              <span class="goal-target">Στόχος: ${goal.amount.toFixed(2)}€</span>
+            </div>
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" style="width:${percent}%;"></div>
+            </div>
+            <div class="goal-stats">
+              <div class="goal-stat">
+                <div class="goal-stat-label">Ολοκλήρωση</div>
+                <div class="goal-stat-value">${percent.toFixed(0)}%</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-label">Υπόλοιπο</div>
+                <div class="goal-stat-value">${(goal.amount - goal.current).toFixed(2)}€</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-label">Κατάσταση</div>
+                <div class="goal-stat-value">${completed ? "Ολοκληρωμένος" : "Σε εξέλιξη"}</div>
+              </div>
+            </div>
+          </div>
+          <div class="goal-actions-bottom">
+            <button class="btn-contribute" onclick="contributeToGoal(${goal.id})">➕ Προσθήκη ποσού</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function deleteGoal(id) {
+      goals = goals.filter(g => g.id !== id);
+      saveData();
+      renderGoals();
+      showToast("Ο στόχος διαγράφηκε", "success");
+    }
+
+    function contributeToGoal(id) {
+      const amountStr = prompt("Πόσο θέλεις να προσθέσεις σε αυτόν τον στόχο; (€)");
+      if (!amountStr) return;
+      const amount = parseFloat(amountStr.replace(",", "."));
+      if (isNaN(amount) || amount <= 0) {
+        showToast("Μη έγκυρο ποσό.", "error");
+        return;
+      }
+      const goal = goals.find(g => g.id === id);
+      if (!goal) return;
+      goal.current += amount;
+      saveData();
+      renderGoals();
+      showToast("Το ποσό προστέθηκε στον στόχο.", "success");
+    }
+
+    window.deleteGoal = deleteGoal;
+    window.contributeToGoal = contributeToGoal;
+
+    document.getElementById("addGoalBtn").addEventListener("click", () => {
+      document.getElementById("goalModal").classList.add("active");
+    });
+    document.getElementById("closeGoalModal").addEventListener("click", () => {
+      document.getElementById("goalModal").classList.remove("active");
+    });
+
+    document.getElementById("goalForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("goalName").value;
+      const amount = parseFloat(document.getElementById("goalAmount").value);
+      const current = parseFloat(document.getElementById("goalCurrent").value);
+      const deadline = document.getElementById("goalDeadline").value;
+      const icon = document.getElementById("goalIcon").value;
+
+      goals.push({
+        id: Date.now(),
+        name,
+        amount,
+        current,
+        deadline,
+        icon
+      });
+
+      saveData();
+      document.getElementById("goalModal").classList.remove("active");
+      this.reset();
+      renderGoals();
+      showToast("Ο στόχος αποθηκεύτηκε!", "success");
+    });
+
+    /* CSV Export / Import */
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      if (transactions.length === 0) {
+        showToast("Δεν υπάρχουν κινήσεις για εξαγωγή.", "error");
+        return;
+      }
+      const header = ["date", "type", "amount", "category", "description", "recurring"];
+      const rows = transactions.map(t => [
+        t.date,
+        t.type,
+        t.amount,
+        '"' + (t.category || "") + '"',
+        '"' + (t.description || "") + '"',
+        t.recurring ? "1" : "0"
+      ]);
+      const csv = [header.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "transactions.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Εξαγωγή CSV ολοκληρώθηκε.", "success");
+    });
+
+    document.getElementById("importBtn").addEventListener("click", () => {
+      document.getElementById("csvFileInput").click();
+    });
+
+    document.getElementById("csvFileInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const text = evt.target.result;
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        if (lines.length < 2) {
+          showToast("Το CSV δεν περιέχει δεδομένα.", "error");
+          return;
+        }
+        const [headerLine, ...dataLines] = lines;
+        const headers = headerLine.split(",");
+        const idx = {
+          date: headers.indexOf("date"),
+          type: headers.indexOf("type"),
+          amount: headers.indexOf("amount"),
+          category: headers.indexOf("category"),
+          description: headers.indexOf("description"),
+          recurring: headers.indexOf("recurring")
+        };
+        dataLines.forEach(line => {
+          const cols = line.split(",");
+          const t = {
+            id: Date.now() + Math.random(),
+            date: cols[idx.date] || "",
+            type: cols[idx.type] || "expense",
+            amount: parseFloat(cols[idx.amount] || "0"),
+            category: (cols[idx.category] || "").replace(/^"|"$/g, ""),
+            description: (cols[idx.description] || "").replace(/^"|"$/g, ""),
+            recurring: cols[idx.recurring] === "1"
+          };
+          if (t.date && !isNaN(t.amount) && t.amount !== 0) {
+            transactions.push(t);
+          }
+        });
+        saveData();
+        renderTransactions();
+        updateOverview();
+        updateInsights();
+        updateCharts();
+        renderBudgets();
+        showToast("Εισαγωγή CSV ολοκληρώθηκε.", "success");
+      };
+      reader.readAsText(file);
+    });
+
+    /* Clear All */
+    document.getElementById("clearAllBtn").addEventListener("click", () => {
+      if (!confirm("Σίγουρα θέλεις να διαγράψεις ΟΛΕΣ τις κινήσεις;")) return;
+      transactions = [];
+      saveData();
+      renderTransactions();
+      updateOverview();
+      updateInsights();
+      updateCharts();
+      renderBudgets();
+      showToast("Όλες οι κινήσεις διαγράφηκαν.", "success");
+    });
+
+    /* Help & Lang */
+    document.getElementById("helpBtn").addEventListener("click", () => {
+      alert(
+        "Οδηγίες:\n\n" +
+        "- Στο tab 'Επισκόπηση' μπορείς να προσθέσεις νέες κινήσεις.\n" +
+        "- Επίλεξε Έσοδο ή Έξοδο και θα εμφανιστούν αντίστοιχες κατηγορίες.\n" +
+        "- Στο tab 'Κινήσεις' βλέπεις αναλυτικά το ιστορικό.\n" +
+        "- Στο 'Προϋπολογισμοί' ορίζεις μηνιαία όρια ανά κατηγορία.\n" +
+        "- Στο 'Στόχοι' ορίζεις στόχους αποταμίευσης.\n"
+      );
+    });
+
+    document.getElementById("langBtn").addEventListener("click", () => {
+      const span = document.getElementById("currentLang");
+      span.textContent = span.textContent === "EL" ? "EN" : "EL";
+      showToast("Αλλαγή ετικέτας γλώσσας (το UI παραμένει στα ελληνικά).", "success");
+    });
+
+    /* Αρχικοποίηση όταν φορτώνει η σελίδα */
+    document.addEventListener("DOMContentLoaded", () => {
+      updateCategoryOptions("income");
+      renderTransactions();
+      updateOverview();
+      updateInsights();
+      updateCharts();
+      renderBudgets();
+      renderGoals();
+      populateFilterCategories();
+    });
+  </script>
+</body>
+</html>
